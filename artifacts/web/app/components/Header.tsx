@@ -59,7 +59,9 @@ export default function Header() {
             width={480}
             height={340}
             priority
-            className="h-16 w-auto sm:h-20 lg:h-24"
+            className={`h-16 w-auto transition sm:h-20 lg:h-24 ${
+              isScrolled ? "" : "brightness-0 invert"
+            }`}
           />
           <span className="sr-only">
             Revive Repair Specialists — Harrisburg &amp; Central PA Roofing

@@ -12,7 +12,7 @@ export default function Footer() {
             alt="Revive Repair Specialists"
             width={480}
             height={340}
-            className="h-24 w-auto"
+            className="h-24 w-auto brightness-0 invert"
           />
           <p className="mt-4 text-sm text-white/65">
             Roof repair &amp; replacement in Central Pennsylvania
