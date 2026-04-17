@@ -4,11 +4,11 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 const navLinks = [
-  { href: "/#services", label: "Services" },
-  { href: "/#recent-work", label: "Recent Work" },
-  { href: "/#reviews", label: "Reviews" },
+  { href: "/about", label: "About" },
+  { href: "/services", label: "Services" },
   { href: "/blog", label: "Blog" },
-  { href: "/#contact", label: "Contact" },
+  { href: "/contact", label: "Contact" },
+  { href: "/login", label: "Client Login" },
 ];
 
 export default function Header() {
@@ -93,7 +93,7 @@ export default function Header() {
             (717) 500-1434
           </a>
           <a
-            href="/#contact"
+            href="/contact"
             className="hidden items-center justify-center rounded-full bg-[var(--color-amber)] px-4 py-2.5 text-sm font-semibold text-[var(--color-primary)] transition hover:bg-[#ebb13a] sm:inline-flex sm:px-5"
           >
             Free Inspection
@@ -165,7 +165,7 @@ export default function Header() {
                 Call (717) 500-1434
               </a>
               <a
-                href="/#contact"
+                href="/contact"
                 onClick={() => setMenuOpen(false)}
                 className="inline-flex items-center justify-center rounded-full bg-[var(--color-amber)] px-4 py-3 text-sm font-semibold text-[var(--color-primary)]"
               >

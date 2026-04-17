@@ -1,0 +1,32 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "RX8wnOfQmMZmEre3lP1f_"
+uri = "file://artifacts/web/public/images/services/general-contracting.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "pSg58L1PY_apEHVqj94Bm"
+uri = "file://artifacts/web/public/images/services/renovation.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "iSpvhq9iz9R_g_ODn74aE"
+uri = "file://artifacts/web/public/images/services/demolition.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "ENmJrFSGLBR5P8mzMjrZZ"
+uri = "file://artifacts/web/public/images/services/roofing-hero.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "YysRokxNvtT7sFuV6f4h8"
+uri = "file://artifacts/web/public/images/about/team.png"
+type = "image"
+title = "generated_image"

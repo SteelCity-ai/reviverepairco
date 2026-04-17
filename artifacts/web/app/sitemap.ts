@@ -11,22 +11,46 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0,
     },
     {
-      url: `${baseUrl}/services/roof-replacement`,
+      url: `${baseUrl}/about`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/services`,
       lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/contact`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/services/roof-replacement`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
     },
     {
       url: `${baseUrl}/services/roof-leak-repair`,
       lastModified: new Date(),
       changeFrequency: "monthly",
-      priority: 0.9,
+      priority: 0.8,
     },
     {
       url: `${baseUrl}/services/storm-damage-repair`,
       lastModified: new Date(),
       changeFrequency: "monthly",
-      priority: 0.9,
+      priority: 0.8,
     },
     {
       url: `${baseUrl}/services/emergency-roof-repair`,
@@ -75,16 +99,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  const locationPages: MetadataRoute.Sitemap = [
-    "harrisburg", "hershey", "mechanicsburg", "carlisle", "york",
-    "lancaster", "lebanon", "reading", "allentown", "chambersburg",
-    "gettysburg", "shippensburg", "middletown", "hummelstown", "dillsburg",
-  ].map((city) => ({
-    url: `${baseUrl}/locations/${city}`,
-    lastModified: new Date(),
-    changeFrequency: "monthly",
-    priority: 0.7,
-  }));
-
-  return [...staticPages, ...blogPosts, ...locationPages];
+  return [...staticPages, ...blogPosts];
 }
