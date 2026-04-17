@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 const stats = [
   "24-hour inspection scheduling",
@@ -6,16 +9,52 @@ const stats = [
   "Licensed, insured, and workmanship-backed",
 ];
 
+const heroImages = [
+  {
+    src: "/images/hero/hero-1-sunset.jpg",
+    alt: "Revive Roof Repair crew working on a residential roof at sunset in Central Pennsylvania",
+  },
+  {
+    src: "/images/hero/hero-2-roofer.jpg",
+    alt: "Professional roofer silhouetted against a sunset sky on a Pennsylvania home",
+  },
+  {
+    src: "/images/hero/hero-3-skylight.jpg",
+    alt: "Roofing technician installing a skylight during a roof replacement",
+  },
+  {
+    src: "/images/hero/hero-4-install.jpg",
+    alt: "Roofing crew installing new roofing material on a Central PA home",
+  },
+];
+
+const ROTATION_MS = 5500;
+
 export default function HeroSection() {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setActiveIndex((i) => (i + 1) % heroImages.length);
+    }, ROTATION_MS);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <section className="relative isolate flex min-h-[80vh] items-center overflow-hidden bg-[var(--color-primary)] text-white">
-      <Image
-        src="/images/hero-roof.jpg"
-        alt="Revive Roof Repair team on a residential roofing project in Central Pennsylvania"
-        fill
-        priority
-        className="object-cover"
-      />
+      {heroImages.map((image, index) => (
+        <Image
+          key={image.src}
+          src={image.src}
+          alt={image.alt}
+          fill
+          priority={index === 0}
+          sizes="100vw"
+          className={`object-cover transition-opacity duration-[1500ms] ease-in-out ${
+            index === activeIndex ? "opacity-100" : "opacity-0"
+          }`}
+        />
+      ))}
       <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(26,32,44,0.88)_10%,rgba(26,32,44,0.68)_42%,rgba(26,32,44,0.5)_100%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(214,158,46,0.22),transparent_38%)]" />
 
@@ -63,6 +102,21 @@ export default function HeroSection() {
             ))}
           </div>
         </div>
+      </div>
+
+      <div className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 gap-2">
+        {heroImages.map((image, index) => (
+          <button
+            key={image.src}
+            type="button"
+            aria-label={`Show hero image ${index + 1}`}
+            aria-current={index === activeIndex ? "true" : undefined}
+            onClick={() => setActiveIndex(index)}
+            className={`h-2 rounded-full transition-all duration-300 ${
+              index === activeIndex ? "w-8 bg-[var(--color-amber)]" : "w-2 bg-white/40 hover:bg-white/70"
+            }`}
+          />
+        ))}
       </div>
     </section>
   );
