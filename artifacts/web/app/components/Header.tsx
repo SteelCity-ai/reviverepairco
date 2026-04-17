@@ -51,17 +51,17 @@ export default function Header() {
         <a
           href="/#top"
           aria-label="Revive Repair Specialists — home"
-          className={`flex items-center rounded-2xl px-3 py-2 transition ${
-            isScrolled ? "bg-transparent" : "bg-white/95 shadow-[0_10px_30px_rgba(0,0,0,0.18)]"
-          }`}
+          className="flex items-center"
         >
           <Image
-            src="/images/revive-logo-v2.png"
+            src="/images/revive-logo-circle.webp"
             alt="Revive Repair Specialists"
-            width={480}
-            height={340}
+            width={200}
+            height={200}
             priority
-            className="h-12 w-auto sm:h-14 lg:h-16"
+            className={`h-14 w-14 rounded-full transition sm:h-16 sm:w-16 lg:h-[72px] lg:w-[72px] ${
+              isScrolled ? "" : "bg-white shadow-[0_10px_30px_rgba(0,0,0,0.25)]"
+            }`}
           />
           <span className="sr-only">
             Revive Repair Specialists — Harrisburg &amp; Central PA Roofing

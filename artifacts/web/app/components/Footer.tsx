@@ -7,15 +7,13 @@ export default function Footer() {
     <footer className="bg-[var(--color-primary)] text-white">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-3 lg:px-8 lg:py-16">
         <div>
-          <div className="inline-flex items-center rounded-2xl bg-white px-4 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
-            <Image
-              src="/images/revive-logo-v2.png"
-              alt="Revive Repair Specialists"
-              width={480}
-              height={340}
-              className="h-16 w-auto"
-            />
-          </div>
+          <Image
+            src="/images/revive-logo-circle.webp"
+            alt="Revive Repair Specialists"
+            width={200}
+            height={200}
+            className="h-20 w-20 rounded-full bg-white shadow-[0_10px_30px_rgba(0,0,0,0.25)]"
+          />
           <p className="mt-4 text-sm text-white/65">
             Roof repair &amp; replacement in Central Pennsylvania
           </p>
