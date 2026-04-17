@@ -7,15 +7,18 @@ export default function Footer() {
     <footer className="bg-[var(--color-primary)] text-white">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-3 lg:px-8 lg:py-16">
         <div>
-          <div className="flex items-center gap-4">
-            <div className="relative h-14 w-14 overflow-hidden rounded-2xl bg-white/8 p-2">
-              <Image src="/images/logo-color-primary.png" alt="Revive Roof Repair logo" fill className="object-contain p-2" />
-            </div>
-            <div>
-              <p className="text-lg font-bold">Revive Roof Repair</p>
-              <p className="text-sm text-white/65">Roof repair & replacement in Central Pennsylvania</p>
-            </div>
+          <div className="inline-flex items-center rounded-2xl bg-white px-4 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
+            <Image
+              src="/images/revive-logo-v2.png"
+              alt="Revive Repair Specialists"
+              width={480}
+              height={340}
+              className="h-16 w-auto"
+            />
           </div>
+          <p className="mt-4 text-sm text-white/65">
+            Roof repair &amp; replacement in Central Pennsylvania
+          </p>
           <p className="mt-6 max-w-sm text-sm leading-7 text-white/68">
             Premium local roofing with strong communication, emergency responsiveness, and a clear path to a free inspection.
           </p>
