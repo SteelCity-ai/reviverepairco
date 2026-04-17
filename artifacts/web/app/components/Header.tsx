@@ -51,9 +51,7 @@ export default function Header() {
         <a
           href="/#top"
           aria-label="Revive Repair Specialists — home"
-          className={`flex items-center rounded-2xl px-3 py-2 transition ${
-            isScrolled ? "bg-transparent" : "bg-white/95 shadow-[0_10px_30px_rgba(0,0,0,0.18)]"
-          }`}
+          className="flex items-center"
         >
           <Image
             src="/images/revive-logo-v2.png"
@@ -61,7 +59,7 @@ export default function Header() {
             width={480}
             height={340}
             priority
-            className="h-12 w-auto sm:h-14 lg:h-16"
+            className="h-16 w-auto sm:h-20 lg:h-24"
           />
           <span className="sr-only">
             Revive Repair Specialists — Harrisburg &amp; Central PA Roofing
