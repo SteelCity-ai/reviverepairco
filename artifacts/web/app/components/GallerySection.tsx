@@ -125,7 +125,7 @@ export default function GallerySection() {
   }, [lightboxIndex]);
 
   return (
-    <section id="recent-work" className="bg-[var(--color-cream,#f7f5f1)] py-20 sm:py-24">
+    <section id="recent-work" className="scroll-mt-24 bg-[var(--color-cream,#f7f5f1)] py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-2xl">
