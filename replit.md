@@ -36,3 +36,28 @@ See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and pa
   - Production: `next build` then `next start` (configured in `artifacts/web/.replit-artifact/artifact.toml`).
   - `next.config.ts` reads `REPLIT_DOMAINS` to set `allowedDevOrigins` so the dev server accepts proxied requests.
   - No environment variables / secrets required.
+
+## Pushing site updates back to GitHub
+
+Workspace git is platform-managed, so changes are pushed to
+`SteelCity-ai/reviveroofrepair.com` via a sync script that uses the connected
+GitHub account (no PAT required).
+
+- Preview pending changes (no writes):
+  `pnpm --filter @workspace/scripts exec tsx ./src/sync-to-github.ts --dry-run`
+- Push to the default branch (`main`):
+  `pnpm --filter @workspace/scripts exec tsx ./src/sync-to-github.ts --message "your commit message"`
+- Push to a feature branch and open a PR:
+  `pnpm --filter @workspace/scripts exec tsx ./src/sync-to-github.ts --branch my-edits --message "..."`
+  (the script prints a compare URL when not pushing to the default branch).
+- Help: add `--help` for all options (`--owner`, `--repo`, `--branch`,
+  `--base-branch`, `--message`, `--dir`, `--dry-run`, `--force-delete`).
+
+The script uploads only files whose contents changed and respects
+`artifacts/web/.gitignore` plus `node_modules`, `.next`, build output, and
+`.git`. Because it mirrors the local directory to the repo root, deleting
+remote files requires `--force-delete` — without it, the script will print
+the would-be deletions and abort, so files outside the synced directory
+(workflows, docs, CI config) can't be removed by accident. To pull updates
+from teammates, use GitHub's normal PR/clone flow on your local machine —
+this workspace does not auto-pull.
