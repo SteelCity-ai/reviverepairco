@@ -74,7 +74,7 @@ export default function Header() {
               <li key={link.href}>
                 <a
                   href={link.href}
-                  className={`text-sm font-semibold transition ${linkColor}`}
+                  className={`text-base font-semibold transition ${linkColor}`}
                 >
                   {link.label}
                 </a>
