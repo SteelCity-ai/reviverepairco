@@ -1,4 +1,5 @@
 import ContactSection from "./components/ContactSection";
+import GallerySection from "./components/GallerySection";
 import HeroSection from "./components/HeroSection";
 import ServicesSection from "./components/ServicesSection";
 import SocialProofSection from "./components/SocialProofSection";
@@ -12,6 +13,7 @@ export default function Home() {
         <TrustBadges />
       </div>
       <ServicesSection />
+      <GallerySection />
       <SocialProofSection />
       <ContactSection />
     </div>
