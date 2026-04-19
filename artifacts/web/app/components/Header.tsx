@@ -59,7 +59,7 @@ export default function Header() {
             width={480}
             height={340}
             priority
-            className={`h-16 w-auto transition sm:h-20 lg:h-24 ${
+            className={`h-24 w-auto transition sm:h-28 lg:h-32 ${
               isScrolled ? "" : "brightness-0 invert"
             }`}
           />
