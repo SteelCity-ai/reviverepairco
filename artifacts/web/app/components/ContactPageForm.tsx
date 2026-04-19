@@ -10,15 +10,52 @@ const services = [
   "Not sure yet",
 ];
 
-export default function ContactPageForm() {
-  const [submitted, setSubmitted] = useState(false);
+type Status = "idle" | "submitting" | "success" | "error";
 
-  const handleSubmit = (e: React.FormEvent) => {
+export default function ContactPageForm() {
+  const [status, setStatus] = useState<Status>("idle");
+  const [errorMessage, setErrorMessage] = useState<string>("");
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitted(true);
+    setStatus("submitting");
+    setErrorMessage("");
+
+    const formEl = e.currentTarget;
+    const formData = new FormData(formEl);
+    const payload = {
+      name: String(formData.get("name") ?? ""),
+      phone: String(formData.get("phone") ?? ""),
+      email: String(formData.get("email") ?? ""),
+      service: String(formData.get("service") ?? ""),
+      message: String(formData.get("message") ?? ""),
+    };
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error || "Something went wrong sending your request.");
+      }
+
+      setStatus("success");
+      formEl.reset();
+    } catch (err) {
+      setStatus("error");
+      setErrorMessage(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong sending your request.",
+      );
+    }
   };
 
-  if (submitted) {
+  if (status === "success") {
     return (
       <div className="rounded-2xl border border-[var(--color-amber)]/30 bg-[var(--color-surface)] p-8 text-center">
         <h3 className="text-2xl font-bold text-[var(--color-primary)]">Thanks!</h3>
@@ -36,6 +73,8 @@ export default function ContactPageForm() {
       </div>
     );
   }
+
+  const submitting = status === "submitting";
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-5">
@@ -131,15 +170,26 @@ export default function ContactPageForm() {
         />
       </div>
 
+      {status === "error" && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {errorMessage} You can also call us at{" "}
+          <a href="tel:+17175001434" className="font-semibold underline">
+            (717) 500-1434
+          </a>
+          .
+        </div>
+      )}
+
       <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-[var(--color-slate)]">
           Your information is private and never shared.
         </p>
         <button
           type="submit"
-          className="inline-flex items-center justify-center rounded-full bg-[var(--color-amber)] px-6 py-3 text-sm font-semibold text-[var(--color-primary)] transition hover:bg-[#ebb13a]"
+          disabled={submitting}
+          className="inline-flex items-center justify-center rounded-full bg-[var(--color-amber)] px-6 py-3 text-sm font-semibold text-[var(--color-primary)] transition hover:bg-[#ebb13a] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Request free estimate
+          {submitting ? "Sending…" : "Request free estimate"}
         </button>
       </div>
     </form>

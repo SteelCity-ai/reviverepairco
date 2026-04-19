@@ -72,10 +72,10 @@ export default function ContactPage() {
                 </dt>
                 <dd className="mt-2">
                   <a
-                    href="mailto:info@reviveroofrepair.com"
+                    href="mailto:ddawson@reviveroofrepair.com"
                     className="text-lg font-semibold text-white transition hover:text-[var(--color-amber)]"
                   >
-                    info@reviveroofrepair.com
+                    ddawson@reviveroofrepair.com
                   </a>
                 </dd>
               </div>
