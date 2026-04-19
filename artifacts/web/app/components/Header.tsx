@@ -54,7 +54,7 @@ export default function Header() {
           className="flex items-center"
         >
           <Image
-            src="/images/revive-logo-v2.png"
+            src="/images/revive-logo-v3.png"
             alt="Revive Repair Specialists"
             width={480}
             height={340}
