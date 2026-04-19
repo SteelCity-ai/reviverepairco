@@ -47,7 +47,7 @@ export default function Header() {
           : "bg-[var(--color-primary)]/75 backdrop-blur-sm"
       }`}
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-1 sm:px-6 lg:px-8">
         <a
           href="/#top"
           aria-label="Revive Repair Specialists — home"
@@ -59,7 +59,7 @@ export default function Header() {
             width={480}
             height={340}
             priority
-            className={`h-24 w-auto transition sm:h-28 lg:h-32 ${
+            className={`h-28 w-auto transition sm:h-32 lg:h-36 ${
               isScrolled ? "" : "brightness-0 invert"
             }`}
           />
