@@ -2,77 +2,29 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { Project } from "./galleryData";
 
-type Project = {
-  src: string;
-  alt: string;
-  caption: string;
+type GallerySectionProps = {
+  projects: Project[];
+  id?: string;
+  eyebrow?: string;
+  heading?: string;
+  subheading?: string;
+  showPlaceholderNote?: boolean;
 };
 
-const projects: Project[] = [
-  {
-    src: "/images/gallery/01-sunset-crew.webp",
-    alt: "Revive Roof Repair crew finishing a residential roof at sunset",
-    caption: "Crew on a residential install at sunset",
-  },
-  {
-    src: "/images/gallery/02-rooftop-portrait.webp",
-    alt: "Revive Roof Repair team member harnessed in on a steep shingle roof",
-    caption: "Tied off on a steep shingle replacement",
-  },
-  {
-    src: "/images/gallery/03-shingle-install.webp",
-    alt: "Roofer installing architectural asphalt shingles on a residential roof",
-    caption: "Architectural shingle install in progress",
-  },
-  {
-    src: "/images/gallery/04-tear-off.webp",
-    alt: "Crew working a tear-off and underlayment install on a roof ridge",
-    caption: "Tear-off and underlayment ridge work",
-  },
-  {
-    src: "/images/gallery/05-ridge-work.webp",
-    alt: "Roofer roped in working on a steep section near the ridge",
-    caption: "Rope-assist work on a steep slope",
-  },
-  {
-    src: "/images/gallery/06-materials-delivery-roof.webp",
-    alt: "Roofer staging shingle bundles along the ridge of a Central PA home",
-    caption: "Shingles staged along the ridge",
-  },
-  {
-    src: "/images/gallery/07-crane-lift.webp",
-    alt: "Crane delivering pallet of shingles directly to the roof deck",
-    caption: "Crane delivery straight to the deck",
-  },
-  {
-    src: "/images/gallery/08-truck-delivery.webp",
-    alt: "Boom truck delivering roofing materials to a homeowner's driveway",
-    caption: "Job-site delivery and material drop",
-  },
-  {
-    src: "/images/gallery/09-finished-home.webp",
-    alt: "Aerial view of a completed roof replacement on a two-story home",
-    caption: "Completed two-story replacement",
-  },
-  {
-    src: "/images/gallery/10-flat-roof.webp",
-    alt: "Finished commercial flat roof at dusk",
-    caption: "Commercial flat roof, completed",
-  },
-  {
-    src: "/images/gallery/11-torch-down.webp",
-    alt: "Technician installing torch-down membrane on a flat roof",
-    caption: "Torch-down membrane install",
-  },
-];
-
-export default function GallerySection() {
+export default function GallerySection({
+  projects,
+  id = "recent-work",
+  eyebrow = "Recent work",
+  heading = "Real Central PA roofs, finished by the Revive crew.",
+  subheading = "Swipe through recent projects — repairs, full replacements, commercial flat roofs, and storm response work across Harrisburg and the surrounding area.",
+  showPlaceholderNote = false,
+}: GallerySectionProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  // Track active slide based on scroll position
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
@@ -91,20 +43,22 @@ export default function GallerySection() {
       track.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [projects.length]);
 
-  const scrollToIndex = useCallback((index: number) => {
-    const track = trackRef.current;
-    if (!track) return;
-    const clamped = Math.max(0, Math.min(projects.length - 1, index));
-    const slideWidth = track.scrollWidth / projects.length;
-    track.scrollTo({ left: clamped * slideWidth, behavior: "smooth" });
-  }, []);
+  const scrollToIndex = useCallback(
+    (index: number) => {
+      const track = trackRef.current;
+      if (!track) return;
+      const clamped = Math.max(0, Math.min(projects.length - 1, index));
+      const slideWidth = track.scrollWidth / projects.length;
+      track.scrollTo({ left: clamped * slideWidth, behavior: "smooth" });
+    },
+    [projects.length],
+  );
 
   const handlePrev = () => scrollToIndex(activeIndex - 1);
   const handleNext = () => scrollToIndex(activeIndex + 1);
 
-  // Lightbox keyboard nav
   useEffect(() => {
     if (lightboxIndex === null) return;
     const onKey = (e: KeyboardEvent) => {
@@ -122,23 +76,26 @@ export default function GallerySection() {
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [lightboxIndex]);
+  }, [lightboxIndex, projects.length]);
 
   return (
-    <section id="recent-work" className="scroll-mt-24 bg-[var(--color-cream,#f7f5f1)] py-20 sm:py-24">
+    <section id={id} className="scroll-mt-24 bg-[var(--color-cream,#f7f5f1)] py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[var(--color-amber)]">
-              Recent work
+              {eyebrow}
             </p>
             <h2 className="mt-4 text-3xl font-bold tracking-tight text-[var(--color-primary)] sm:text-4xl">
-              Real Central PA roofs, finished by the Revive crew.
+              {heading}
             </h2>
-            <p className="mt-4 text-lg leading-8 text-[var(--color-slate)]">
-              Swipe through recent projects — repairs, full replacements, commercial flat
-              roofs, and storm response work across Harrisburg and the surrounding area.
-            </p>
+            <p className="mt-4 text-lg leading-8 text-[var(--color-slate)]">{subheading}</p>
+            {showPlaceholderNote && (
+              <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-[var(--color-amber)]/40 bg-[var(--color-amber)]/10 px-3 py-1.5 text-xs font-semibold text-[var(--color-primary)]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-amber)]" />
+                Sample images shown — real project photos coming soon
+              </p>
+            )}
           </div>
 
           <div className="hidden gap-2 sm:flex">

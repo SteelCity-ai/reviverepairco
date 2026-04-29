@@ -30,3 +30,81 @@ id = "YysRokxNvtT7sFuV6f4h8"
 uri = "file://artifacts/web/public/images/about/team.png"
 type = "image"
 title = "generated_image"
+
+[[generated]]
+id = "enD7Y1W42zSE6bevJzcai"
+uri = "file://artifacts/web/public/images/revive-logo-company.png"
+type = "image"
+title = "revive repair company logo v2"
+
+[[generated]]
+id = "9J-rO1TX_eIhAfR9ZUqDl"
+uri = "file://artifacts/web/public/images/gc-hero/gc-hero-1-addition.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "cyG3pAPW90K_JSyx96i76"
+uri = "file://artifacts/web/public/images/gc-hero/gc-hero-2-framing.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "mdQzcxpBDaDxqxI719Li-"
+uri = "file://artifacts/web/public/images/gc-hero/gc-hero-3-kitchen.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "8rF9qSw6Fe7K32uIdczaM"
+uri = "file://artifacts/web/public/images/gc-hero/gc-hero-4-exterior.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "QEF-tIoHrVGqHTJWfoEYt"
+uri = "file://artifacts/web/public/images/gallery-gc/gc-01-garage.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "ybLV1u5J0JvixBjtrlzPj"
+uri = "file://artifacts/web/public/images/gallery-gc/gc-02-basement.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "KYPDIFyZBCD1IbYwVxYs1"
+uri = "file://artifacts/web/public/images/gallery-gc/gc-03-bathroom.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "CvCPs1ZVIimF3U1QgqUc2"
+uri = "file://artifacts/web/public/images/gallery-gc/gc-04-deck.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "EHPfwRxu7l4kM1LBwFGiL"
+uri = "file://artifacts/web/public/images/gallery-gc/gc-05-demolition.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "p8jGKTptruPulkC0eIRta"
+uri = "file://artifacts/web/public/images/gallery-gc/gc-06-sunroom.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "HFfkmFAXp90DWTbi7BnaJ"
+uri = "file://artifacts/web/public/images/gallery-gc/gc-07-porch.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "gb2VjRxqTHpkk-ktzlwSm"
+uri = "file://artifacts/web/public/images/gallery-gc/gc-08-livingroom.png"
+type = "image"
+title = "generated_image"

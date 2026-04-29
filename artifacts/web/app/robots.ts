@@ -1,6 +1,14 @@
 import { MetadataRoute } from "next";
+import { headers } from "next/headers";
+import { brandConfig, brandFromHostname } from "../lib/brand";
 
-export default function robots(): MetadataRoute.Robots {
+export const dynamic = "force-dynamic";
+
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "reviveroofrepair.com";
+  const brand = brandFromHostname(host);
+  const domain = brandConfig(brand).domain;
   return {
     rules: [
       {
@@ -9,6 +17,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/", "/_next/"],
       },
     ],
-    sitemap: "https://reviveroofrepair.com/sitemap.xml",
+    sitemap: `https://${domain}/sitemap.xml`,
   };
 }

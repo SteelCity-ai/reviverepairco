@@ -4,39 +4,51 @@ import "./globals.css";
 import CookieBanner from "./components/CookieBanner";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
+import { brandConfig, getBrand } from "../lib/brand";
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
 });
 
-export const metadata: Metadata = {
-  title: "Revive Roof Repair | Harrisburg & Central PA Roofing Experts",
-  description:
-    "Revive Roof Repair helps homeowners across Harrisburg and Central PA with roof repair, replacements, and storm damage recovery. Request your free inspection today.",
-  openGraph: {
-    title: "Revive Roof Repair | Harrisburg & Central PA Roofing Experts",
-    description:
-      "Modern roofing website redesign for roof repair, roof replacement, and storm damage services across Central Pennsylvania.",
-    url: "https://reviveroofrepair.com",
-    siteName: "Revive Roof Repair",
-    locale: "en_US",
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getBrand();
+  const config = brandConfig(brand);
+  const url = `https://${config.domain}`;
 
-export default function RootLayout({
+  return {
+    metadataBase: new URL(url),
+    title: {
+      default: config.metaTitle,
+      template: `%s | ${config.name}`,
+    },
+    description: config.metaDescription,
+    openGraph: {
+      title: config.metaTitle,
+      description: config.metaDescription,
+      siteName: config.name,
+      locale: "en_US",
+      type: "website",
+    },
+  };
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const brand = await getBrand();
+  const config = brandConfig(brand);
+
   const localBusinessSchema = {
     "@context": "https://schema.org",
-    "@type": "RoofingContractor",
-    name: "Revive Roof Repair",
+    "@type": brand === "repair-co" ? "GeneralContractor" : "RoofingContractor",
+    name: config.name,
     telephone: "+1-717-500-1434",
-    url: "https://reviveroofrepair.com",
-    areaServed: "Central Pennsylvania including Harrisburg, Hershey, Mechanicsburg, York, Lancaster, Carlisle",
+    url: `https://${config.domain}`,
+    areaServed:
+      "Central Pennsylvania including Harrisburg, Hershey, Mechanicsburg, York, Lancaster, Carlisle",
     address: {
       "@type": "PostalAddress",
       addressLocality: "Harrisburg",

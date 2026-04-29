@@ -1,21 +1,16 @@
-import ContactSection from "./components/ContactSection";
-import GallerySection from "./components/GallerySection";
-import HeroSection from "./components/HeroSection";
-import ServicesSection from "./components/ServicesSection";
-import SocialProofSection from "./components/SocialProofSection";
-import TrustBadges from "./components/TrustBadges";
+import type { Metadata } from "next";
+import RoofingHomePage from "./components/RoofingHomePage";
+import { brandConfig, getBrand } from "../lib/brand";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getBrand();
+  const config = brandConfig(brand);
+  return {
+    alternates: { canonical: `https://${config.domain}/` },
+    openGraph: { url: `https://${config.domain}/` },
+  };
+}
 
 export default function Home() {
-  return (
-    <div id="top" className="flex flex-col bg-white">
-      <HeroSection />
-      <div className="bg-white px-4 sm:px-6 lg:px-8">
-        <TrustBadges />
-      </div>
-      <ServicesSection />
-      <GallerySection />
-      <SocialProofSection />
-      <ContactSection />
-    </div>
-  );
+  return <RoofingHomePage />;
 }
