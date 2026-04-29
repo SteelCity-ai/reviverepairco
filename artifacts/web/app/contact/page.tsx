@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ContactPageForm from "../components/ContactPageForm";
+import { brandConfig, getBrand } from "../../lib/brand";
 
-export const metadata: Metadata = {
-  title: "Contact Revive Repair Specialists | Central PA",
-  description:
-    "Request a free inspection or estimate from Revive Repair Specialists. Roofing, general contracting, renovations, and demolition across Harrisburg and Central PA.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getBrand();
+  const config = brandConfig(brand);
+  return {
+    title: { absolute: `Contact ${config.name} | Central PA` },
+    description: `Request a free inspection or estimate from ${config.name}. Roofing, general contracting, renovations, and demolition across Harrisburg and Central PA.`,
+    alternates: { canonical: `https://${config.domain}/contact` },
+    openGraph: { url: `https://${config.domain}/contact` },
+  };
+}
 
 const serviceAreas = [
   "Harrisburg",

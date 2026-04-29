@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { brandConfig, getBrand } from "../../lib/brand";
 
-export const metadata: Metadata = {
-  title: "Services | Revive Repair Specialists | Central PA Contractor",
-  description:
-    "Roofing, general contracting, renovations, and demolition across Harrisburg and Central PA. Licensed, insured, and locally owned. Request a free estimate.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getBrand();
+  const config = brandConfig(brand);
+  return {
+    title: { absolute: `Services | ${config.name} | Central PA Contractor` },
+    description:
+      "Roofing, general contracting, renovations, and demolition across Harrisburg and Central PA. Licensed, insured, and locally owned. Request a free estimate.",
+    alternates: { canonical: `https://${config.domain}/services` },
+    openGraph: { url: `https://${config.domain}/services` },
+  };
+}
 
 type Service = {
   slug: string;

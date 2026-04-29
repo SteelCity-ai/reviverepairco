@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { brandConfig, getBrand } from "../../lib/brand";
 
-export const metadata: Metadata = {
-  title: "Revive Roof Repair Blog — Central PA Roofing Guides",
-  description:
-    "Expert roofing tips, storm damage guides, and Pennsylvania homeowner advice from Revive Roof Repair.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getBrand();
+  const config = brandConfig(brand);
+  return {
+    title: { absolute: `${config.name} Blog — Central PA Home & Roofing Guides` },
+    description: `Expert roofing, renovation, and Central Pennsylvania homeowner advice from ${config.name}.`,
+    alternates: { canonical: `https://${config.domain}/blog` },
+    openGraph: { url: `https://${config.domain}/blog` },
+  };
+}
 
 export default function BlogLayout({
   children,

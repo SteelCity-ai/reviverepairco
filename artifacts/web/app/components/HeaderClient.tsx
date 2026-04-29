@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Brand } from "../../lib/brand";
 
@@ -62,7 +63,7 @@ export default function HeaderClient({
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-1 sm:px-6 lg:px-8">
-        <a
+        <Link
           href="/"
           aria-label={`${brandName} — home`}
           className="flex items-center"
@@ -78,18 +79,18 @@ export default function HeaderClient({
             }`}
           />
           <span className="sr-only">{brandName}</span>
-        </a>
+        </Link>
 
         <nav aria-label="Primary" className="hidden lg:block">
           <ul className="flex items-center gap-7">
             {navLinks.map((link) => (
               <li key={link.href}>
-                <a
+                <Link
                   href={link.href}
                   className={`text-base font-semibold transition ${linkColor}`}
                 >
                   {link.label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
@@ -104,12 +105,12 @@ export default function HeaderClient({
           >
             (717) 500-1434
           </a>
-          <a
+          <Link
             href="/contact"
             className="hidden items-center justify-center rounded-full bg-[var(--color-amber)] px-4 py-2.5 text-sm font-semibold text-[var(--color-primary)] transition hover:bg-[#ebb13a] sm:inline-flex sm:px-5"
           >
             {brand === "repair-co" ? "Free Estimate" : "Free Inspection"}
-          </a>
+          </Link>
           <button
             type="button"
             aria-label={menuOpen ? "Close menu" : "Open menu"}
@@ -158,13 +159,13 @@ export default function HeaderClient({
             <ul className="flex flex-col divide-y divide-black/5">
               {navLinks.map((link) => (
                 <li key={link.href}>
-                  <a
+                  <Link
                     href={link.href}
                     onClick={() => setMenuOpen(false)}
                     className="block py-3 text-base font-semibold text-[var(--color-primary)] hover:text-[var(--color-amber)]"
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -176,13 +177,13 @@ export default function HeaderClient({
               >
                 Call (717) 500-1434
               </a>
-              <a
+              <Link
                 href="/contact"
                 onClick={() => setMenuOpen(false)}
                 className="inline-flex items-center justify-center rounded-full bg-[var(--color-amber)] px-4 py-3 text-sm font-semibold text-[var(--color-primary)]"
               >
                 {brand === "repair-co" ? "Free Estimate" : "Free Inspection"}
-              </a>
+              </Link>
             </div>
           </nav>
         </div>

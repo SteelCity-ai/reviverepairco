@@ -37,9 +37,9 @@ export default function DemolitionPage() {
             Tear-outs and demo, done safely and cleaned up after.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/85">
-            Whether it's an interior gut for a renovation, a detached garage
-            coming down, or full-site demolition before a new build, the Revive
-            Repair crew handles the work and the cleanup.
+            Whether it&apos;s an interior gut for a renovation, a detached
+            garage coming down, or full-site demolition before a new build, the
+            Revive Repair crew handles the work and the cleanup.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
@@ -86,7 +86,7 @@ export default function DemolitionPage() {
             <ul className="mt-6 space-y-4 text-base text-[var(--color-slate)]">
               <li>
                 <span className="font-semibold text-[var(--color-primary)]">Fully insured.</span>{" "}
-                General liability + workers' comp on every demolition job.
+                General liability + workers&apos; comp on every demolition job.
               </li>
               <li>
                 <span className="font-semibold text-[var(--color-primary)]">Permits handled.</span>{" "}
@@ -98,7 +98,7 @@ export default function DemolitionPage() {
               </li>
               <li>
                 <span className="font-semibold text-[var(--color-primary)]">Build-ready turnover.</span>{" "}
-                If we're also doing the build, demo flows straight into framing.
+                If we&apos;re also doing the build, demo flows straight into framing.
               </li>
             </ul>
             <Link

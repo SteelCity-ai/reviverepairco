@@ -66,7 +66,7 @@ export default function RenovationPage() {
         <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[var(--color-amber)]">
-              What's included
+              What&apos;s included
             </p>
             <h2 className="mt-4 text-3xl font-bold text-[var(--color-primary)] sm:text-4xl">
               Renovation work we take on regularly.
