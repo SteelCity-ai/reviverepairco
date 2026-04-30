@@ -1,5 +1,4 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "RX8wnOfQmMZmEre3lP1f_"
@@ -108,3 +107,51 @@ id = "gb2VjRxqTHpkk-ktzlwSm"
 uri = "file://artifacts/web/public/images/gallery-gc/gc-08-livingroom.png"
 type = "image"
 title = "generated_image"
+
+[[generated]]
+id = "FlU2lhQAJoQbmHhiP6oIJ"
+uri = "file://artifacts/web/public/images/gc-hero/gc-hero-1-commercial-rehab.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "ZgLtT3kLSOJkqgu3R63Qh"
+uri = "file://artifacts/web/public/images/gc-hero/gc-hero-2-commercial-rehab.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "u8reM8nan1l75KStaiOI9"
+uri = "file://artifacts/web/public/images/gc-hero/gc-hero-3-commercial-rehab.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "6QmbkOwuY6v9kvrB_c7sR"
+uri = "file://artifacts/web/public/images/gc-hero/gc-hero-4-commercial-rehab.png"
+type = "image"
+title = "generated_image"
+
+[[outputs]]
+id = "BGBY_AQgZaKaG2WHSLVIO"
+uri = "file://artifacts/web/public/images/gc-hero/gc-hero-1-commercial-rehab.png"
+type = "image"
+title = "Hero 1 — Brick facade rehab"
+
+[[outputs]]
+id = "xsIy7xH_Fjq8cZ_XJeyHy"
+uri = "file://artifacts/web/public/images/gc-hero/gc-hero-2-commercial-rehab.png"
+type = "image"
+title = "Hero 2 — Interior gut renovation"
+
+[[outputs]]
+id = "2ls6B0t-Tu06Vj9xk5gdg"
+uri = "file://artifacts/web/public/images/gc-hero/gc-hero-3-commercial-rehab.png"
+type = "image"
+title = "Hero 3 — Historic downtown restoration"
+
+[[outputs]]
+id = "q0K_KdtmzdSP94EayM3d1"
+uri = "file://artifacts/web/public/images/gc-hero/gc-hero-4-commercial-rehab.png"
+type = "image"
+title = "Hero 4 — Adaptive reuse / mill conversion"

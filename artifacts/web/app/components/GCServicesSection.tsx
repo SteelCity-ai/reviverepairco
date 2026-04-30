@@ -6,7 +6,7 @@ const services = [
     title: "Additions",
     description:
       "Second stories, room additions, sun rooms, and full structural expansions designed to look like they were always part of the home.",
-    image: "/images/gc-hero/gc-hero-1-addition.png",
+    image: "/images/gc-hero/gc-hero-1-commercial-rehab.png",
     accent: "Permits & framing handled",
     href: "/general-contracting/additions",
   },
@@ -14,7 +14,7 @@ const services = [
     title: "Renovations",
     description:
       "Kitchens, baths, basements, and whole-home interiors — design coordination, demo, build-out, and finishes from one accountable crew.",
-    image: "/images/gc-hero/gc-hero-3-kitchen.png",
+    image: "/images/gc-hero/gc-hero-2-commercial-rehab.png",
     accent: "Design through finish",
     href: "/general-contracting/renovations",
   },

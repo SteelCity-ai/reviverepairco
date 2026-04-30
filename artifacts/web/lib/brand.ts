@@ -64,7 +64,7 @@ const CONFIGS: Record<Brand, BrandConfig> = {
   "repair-co": {
     name: "Revive Repair Company",
     shortName: "Revive Repair Co.",
-    logo: "/images/revive-logo-company.png",
+    logo: "/images/revive-logo-v3.png",
     logoAlt: "Revive Repair Company",
     homeUrl: "/",
     domain: "reviverepairco.com",

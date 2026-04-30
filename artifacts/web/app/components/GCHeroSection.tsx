@@ -11,20 +11,20 @@ const stats = [
 
 const heroImages = [
   {
-    src: "/images/gc-hero/gc-hero-1-addition.png",
-    alt: "Two-story home addition under construction in Central Pennsylvania",
+    src: "/images/gc-hero/gc-hero-1-commercial-rehab.png",
+    alt: "Commercial brick building facade rehab with scaffolding and masonry crew in Central Pennsylvania",
   },
   {
-    src: "/images/gc-hero/gc-hero-2-framing.png",
-    alt: "Contractors framing a new room addition on a residential home",
+    src: "/images/gc-hero/gc-hero-2-commercial-rehab.png",
+    alt: "Interior gut renovation of a commercial building with structural steel and new framing",
   },
   {
-    src: "/images/gc-hero/gc-hero-3-kitchen.png",
-    alt: "Beautifully renovated modern farmhouse kitchen",
+    src: "/images/gc-hero/gc-hero-3-commercial-rehab.png",
+    alt: "Historic downtown commercial building being restored with new roofing and storefront",
   },
   {
-    src: "/images/gc-hero/gc-hero-4-exterior.png",
-    alt: "Exterior of a finished home addition blending with the original house",
+    src: "/images/gc-hero/gc-hero-4-commercial-rehab.png",
+    alt: "Adaptive reuse rehab of an old industrial mill building with new windows being installed",
   },
 ];
 
