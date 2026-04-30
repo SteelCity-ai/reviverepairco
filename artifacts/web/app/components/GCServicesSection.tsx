@@ -8,7 +8,7 @@ const services = [
       "Second stories, room additions, sun rooms, and full structural expansions designed to look like they were always part of the home.",
     image: "/images/gc-hero/gc-hero-1-addition.png",
     accent: "Permits & framing handled",
-    href: "/services#general-contracting",
+    href: "/general-contracting/additions",
   },
   {
     title: "Renovations",
@@ -16,7 +16,7 @@ const services = [
       "Kitchens, baths, basements, and whole-home interiors — design coordination, demo, build-out, and finishes from one accountable crew.",
     image: "/images/gc-hero/gc-hero-3-kitchen.png",
     accent: "Design through finish",
-    href: "/services#renovation",
+    href: "/general-contracting/renovations",
   },
   {
     title: "Garages & Outbuildings",
@@ -24,7 +24,7 @@ const services = [
       "Detached garages, workshops, and pole barns built to match your home and stand up to Central PA winters.",
     image: "/images/gallery-gc/gc-01-garage.png",
     accent: "Match-to-home craftsmanship",
-    href: "/services#general-contracting",
+    href: "/general-contracting/garages-outbuildings",
   },
   {
     title: "Demolition & Site Prep",
@@ -32,7 +32,7 @@ const services = [
       "Selective interior tear-outs, garage demolition, and site cleanup that leaves the project ready for the next phase.",
     image: "/images/gallery-gc/gc-05-demolition.png",
     accent: "Safe, clean, coordinated",
-    href: "/services#demolition",
+    href: "/general-contracting/demolition",
   },
 ];
 

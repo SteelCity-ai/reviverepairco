@@ -35,6 +35,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/services/commercial-roofing`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
   ];
 
+  // Repair-co brand additionally lists the dedicated General Contracting
+  // service detail pages.
+  const gcDetailPages: MetadataRoute.Sitemap = [
+    { url: `${baseUrl}/general-contracting/additions`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${baseUrl}/general-contracting/garages-outbuildings`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${baseUrl}/general-contracting/renovations`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${baseUrl}/general-contracting/demolition`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+  ];
+
   const blogPosts: MetadataRoute.Sitemap = [
     { url: `${baseUrl}/blog/how-to-spot-hail-damage-roof-pennsylvania`, lastModified: now, changeFrequency: "yearly", priority: 0.6 },
     { url: `${baseUrl}/blog/does-insurance-cover-roof-replacement-pennsylvania`, lastModified: now, changeFrequency: "yearly", priority: 0.6 },
@@ -47,5 +56,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return [...sharedRoutes, ...roofingDetailPages, ...blogPosts];
   }
 
-  return [...sharedRoutes, ...blogPosts];
+  return [...sharedRoutes, ...gcDetailPages, ...blogPosts];
 }
