@@ -1,149 +1,152 @@
 import type { Metadata } from "next";
+import GCServicePage, {
+  type GCServicePageConfig,
+} from "../../components/GCServicePage";
+import { roofingProjects } from "../../components/galleryData";
+import { brandConfig, getBrand } from "../../../lib/brand";
 
-export const metadata: Metadata = {
-  title: "Storm Damage Roof Repair | Insurance Claim Help | Revive Roof Repair",
-  description:
-    "Professional storm damage roof repair in Central PA. We work with your insurance company to simplify claims. Free inspection + claim assistance. Call (717) 500-1434",
-  keywords:
-    "storm damage roof repair, hail damage, wind damage, roof inspection, insurance claim, storm restoration, Harrisburg, Hershey, York, Lancaster",
+const ROOFING_DOMAIN = brandConfig("roofing").domain;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getBrand();
+  const config = brandConfig(brand);
+  return {
+    title: {
+      absolute: `Storm Damage Roof Repair | Insurance Claim Help | ${config.shortName}`,
+    },
+    description:
+      "Hail, wind, and storm damage roof repair across Central PA. We document the damage, meet your adjuster on site, and rebuild the roof — one accountable Revive crew end to end.",
+    keywords:
+      "storm damage roof repair, hail damage, wind damage, insurance claim, roof inspection, storm restoration, Harrisburg, Hershey, York, Lancaster, Central PA",
+    alternates: {
+      canonical: `https://${ROOFING_DOMAIN}/services/storm-damage-repair`,
+    },
+    openGraph: {
+      url: `https://${ROOFING_DOMAIN}/services/storm-damage-repair`,
+    },
+  };
+}
+
+const pageConfig: GCServicePageConfig = {
+  hero: {
+    eyebrow: "Storm damage repair",
+    title: "Storm hit hard? We document the damage and rebuild the roof.",
+    description:
+      "Hail bruising, wind-lifted shingles, fallen limbs, and ice-dam damage — diagnosed, documented, and repaired by one accountable Revive crew. We meet your adjuster on the roof.",
+    image: "/images/services/storm.jpg",
+    imageAlt: "Storm-damaged residential roof with missing shingles in Central Pennsylvania",
+  },
+  scope: {
+    eyebrow: "What we handle",
+    heading: "Storm restoration done right — not patched and forgotten.",
+    intro:
+      "Pennsylvania storms hit roofs in patterns. We know what hail bruising actually looks like, where wind lifts the first row of shingles, and how to document it so the insurance carrier funds the right repair.",
+    bullets: [
+      "Hail damage inspection and documentation",
+      "Wind-lifted and missing shingle replacement",
+      "Fallen tree and impact damage repair",
+      "Ice-dam damage and emergency tarping",
+      "Full roof replacement when storm damage is total",
+      "Gutter, fascia, and soffit storm repair",
+    ],
+    sideTitle: "Included with every storm call",
+    sideItems: [
+      {
+        title: "Free storm inspection",
+        desc: "Full roof, gutter, fascia, and ventilation walkthrough — with marked photos of every damaged area.",
+      },
+      {
+        title: "Adjuster meet-on-site",
+        desc: "We meet your insurance adjuster on the roof so the scope and damage are agreed in person, not over email.",
+      },
+      {
+        title: "Claim documentation",
+        desc: "Cause-of-loss report, itemized scope, and labor/material pricing your carrier can work with.",
+      },
+      {
+        title: "Emergency tarping",
+        desc: "If the roof is open and rain is coming, we can tarp the same day to stop further interior damage.",
+      },
+    ],
+  },
+  process: {
+    eyebrow: "How a storm claim runs",
+    heading: "From inspection to a finished roof, the same four steps.",
+    description:
+      "Insurance claims fall apart when nobody is driving the timeline. We own that — from the first inspection to the final supplement.",
+    steps: [
+      {
+        number: "01",
+        title: "Free inspection",
+        body: "We document every damaged elevation with photos and notes you can hand to your carrier or adjuster.",
+      },
+      {
+        number: "02",
+        title: "Meet the adjuster",
+        body: "We meet your adjuster on site, walk the roof together, and agree the scope so the claim is funded right.",
+      },
+      {
+        number: "03",
+        title: "Repair or full replacement",
+        body: "Once the claim is approved, we schedule the work — usually within two to three weeks of approval.",
+      },
+      {
+        number: "04",
+        title: "Supplements & sign-off",
+        body: "If hidden damage shows up during work, we file the supplement, document it, and get it covered.",
+      },
+    ],
+  },
+  gallery: {
+    eyebrow: "Recent storm work",
+    heading: "Storm restorations from the Revive crew.",
+    subheading:
+      "Tear-offs, full replacements, and storm repair work across Harrisburg, Hershey, York, and Lancaster County.",
+    projects: [
+      roofingProjects[3],
+      roofingProjects[4],
+      roofingProjects[5],
+      roofingProjects[6],
+      roofingProjects[8],
+    ],
+  },
+  faq: {
+    eyebrow: "Common questions",
+    heading: "Storm damage claims, answered.",
+    items: [
+      {
+        q: "Should I file a claim before or after the inspection?",
+        a: "Get the inspection first. We'll tell you whether the damage is claim-worthy or whether it's a small repair you'd rather pay out of pocket. There's no point burning a claim for damage your deductible would absorb.",
+      },
+      {
+        q: "Will you meet with my insurance adjuster?",
+        a: "Yes — and we strongly recommend it. We meet the adjuster on the roof, walk through the documented damage together, and agree the scope in person. This is where claims are won or lost.",
+      },
+      {
+        q: "How long does an insurance claim take?",
+        a: "From first inspection to approval is usually 2–4 weeks, depending on your carrier and the volume of claims after a storm. Once approved, we schedule the work within two to three weeks.",
+      },
+      {
+        q: "What if the adjuster misses damage we found?",
+        a: "We file a supplement with photos and documentation. Carriers honor supplements when the evidence is solid — and we know what they need to see.",
+      },
+      {
+        q: "Does my deductible apply to a storm repair?",
+        a: "Yes. Your deductible is your responsibility regardless of the contractor — and any roofer who offers to 'eat the deductible' is committing insurance fraud. We don't do that.",
+      },
+    ],
+  },
+  cta: {
+    eyebrow: "After the storm",
+    heading: "Storm rolled through? Get a documented inspection.",
+    body: "Free roof inspection with photo documentation you can use for an insurance claim — even if you don't end up filing one.",
+  },
+  backLink: {
+    label: "← All roofing services",
+    href: "/roofing",
+  },
 };
 
-export default function StormDamageRepair() {
-  return (
-    <div className="flex flex-col">
-      {/* Hero */}
-      <section className="relative bg-[#1a1a2e] py-20">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a2e] via-[#2d2d44] to-[#1a1a2e]" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="text-6xl mb-4">🌪️</div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Storm Damage Roof Repair
-          </h1>
-          <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-            Pennsylvania storms can cause serious roof damage. We specialize in complete
-            storm restoration and work directly with your insurance company.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a
-              href="tel:+17175001434"
-              className="flex items-center gap-2 bg-[#e63946] hover:bg-[#c5303c] text-white font-bold py-4 px-8 rounded-lg transition-all text-lg"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-              </svg>
-              CALL NOW: (717) 500-1434
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Content */}
-      <section className="bg-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                We Handle Storm Damage From Start to Finish
-              </h2>
-              <p className="text-lg text-gray-600 mb-6">
-                After a major storm, you need someone who understands the insurance process
-                and can restore your roof to perfect condition. We&apos;ve helped hundreds of
-                Central PA homeowners navigate storm damage claims.
-              </p>
-
-              <div className="space-y-4 mb-8">
-                {[
-                  "Free comprehensive storm damage inspection",
-                  "Detailed documentation for insurance claims",
-                  "We meet with adjusters on your behalf",
-                  "Complete restoration using quality materials",
-                  "Work with all major insurance carriers",
-                ].map((item, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6 text-green-500 flex-shrink-0"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <span className="text-gray-700">{item}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="bg-[#1a1a2e] rounded-xl p-6 text-white">
-                <h3 className="font-bold text-xl mb-2">📋 Insurance Claim Assistance</h3>
-                <p className="mb-4">
-                  We&apos;ll help you understand your coverage and work with your adjuster.
-                </p>
-                <a
-                  href="tel:+17175001434"
-                  className="inline-flex items-center gap-2 bg-[#e63946] text-white font-bold py-2 px-6 rounded-lg transition-all"
-                >
-                  Call (717) 500-1434
-                </a>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                Types of Storm Damage We Repair
-              </h3>
-              <div className="space-y-4">
-                {[
-                  { title: "Hail Damage", desc: "Dented shingles, damaged flashing, and bruising that shortens roof life" },
-                  { title: "Wind Damage", desc: "Missing shingles, lifted edges, and exposed underlayment" },
-                  { title: "Fallen Debris", desc: "Tree limbs and branches that puncture or crush roof sections" },
-                  { title: "Flash Flooding", desc: "Water intrusion through compromised areas" },
-                ].map((item, index) => (
-                  <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                    <h4 className="font-semibold text-gray-900">{item.title}</h4>
-                    <p className="text-gray-600 text-sm">{item.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="bg-gray-50 py-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-            Had a Storm? Get a Free Inspection!
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Don&apos;t wait until small damage becomes a major problem. We&apos;ll assess the
-            damage and help you with your claim.
-          </p>
-          <a
-            href="tel:+17175001434"
-            className="inline-flex items-center gap-2 bg-[#e63946] text-white font-bold py-3 px-8 rounded-lg transition-all text-lg"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-            </svg>
-            (717) 500-1434
-          </a>
-        </div>
-      </section>
-    </div>
-  );
+export default function StormDamageRepairPage() {
+  return <GCServicePage config={pageConfig} />;
 }

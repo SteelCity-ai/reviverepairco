@@ -99,6 +99,7 @@ const pageConfig: GCServicePageConfig = {
     heading: "Demolition and tear-out projects.",
     subheading:
       "A look at the kind of selective demolition and site prep work the Revive crew handles. Real project photos are added as jobs wrap up.",
+    showPlaceholderNote: true,
     projects: [
       {
         src: "/images/gallery-gc/gc-05-demolition.png",

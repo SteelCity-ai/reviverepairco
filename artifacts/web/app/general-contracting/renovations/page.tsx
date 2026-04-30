@@ -99,6 +99,7 @@ const pageConfig: GCServicePageConfig = {
     heading: "Recent renovation work from the Revive crew.",
     subheading:
       "A look at the kind of kitchens, baths, basements, and interior renovations we deliver across Central PA. New project photos are added as builds wrap up.",
+    showPlaceholderNote: true,
     projects: [
       {
         src: "/images/gc-hero/gc-hero-3-kitchen.png",

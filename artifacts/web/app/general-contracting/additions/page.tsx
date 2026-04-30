@@ -99,6 +99,7 @@ const pageConfig: GCServicePageConfig = {
     heading: "Recent addition work from the Revive crew.",
     subheading:
       "A look at the kind of additions, sun rooms, and exterior expansions we build across Central PA. New project photos drop in as builds wrap up.",
+    showPlaceholderNote: true,
     projects: [
       {
         src: "/images/gc-hero/gc-hero-1-addition.png",

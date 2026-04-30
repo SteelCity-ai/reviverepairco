@@ -99,6 +99,7 @@ const pageConfig: GCServicePageConfig = {
     heading: "Recent garage and outbuilding work.",
     subheading:
       "A look at detached garages, workshops, and outbuildings we've built across Central PA. Real project photos are added as builds wrap up.",
+    showPlaceholderNote: true,
     projects: [
       {
         src: "/images/gallery-gc/gc-01-garage.png",

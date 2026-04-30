@@ -32,6 +32,7 @@ export type GCServicePageConfig = {
     heading: string;
     subheading: string;
     projects: Project[];
+    showPlaceholderNote?: boolean;
   };
   faq: {
     eyebrow: string;
@@ -43,9 +44,17 @@ export type GCServicePageConfig = {
     heading: string;
     body: string;
   };
+  backLink?: {
+    label: string;
+    href: string;
+  };
 };
 
 export default function GCServicePage({ config }: { config: GCServicePageConfig }) {
+  const backLink = config.backLink ?? {
+    label: "← All general contracting",
+    href: "/general-contracting",
+  };
   return (
     <div className="flex flex-col bg-white">
       {/* Hero */}
@@ -83,10 +92,10 @@ export default function GCServicePage({ config }: { config: GCServicePageConfig 
               Call (717) 500-1434
             </a>
             <Link
-              href="/general-contracting"
+              href={backLink.href}
               className="inline-flex items-center justify-center rounded-full border border-white/20 bg-transparent px-6 py-4 text-base font-semibold text-white/85 transition hover:bg-white/10 hover:text-white"
             >
-              ← All general contracting
+              {backLink.label}
             </Link>
           </div>
         </div>
@@ -196,7 +205,7 @@ export default function GCServicePage({ config }: { config: GCServicePageConfig 
         eyebrow={config.gallery.eyebrow}
         heading={config.gallery.heading}
         subheading={config.gallery.subheading}
-        showPlaceholderNote
+        showPlaceholderNote={config.gallery.showPlaceholderNote ?? false}
       />
 
       {/* FAQ */}
