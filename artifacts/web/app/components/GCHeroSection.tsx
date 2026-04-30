@@ -11,10 +11,6 @@ const stats = [
 
 const heroImages = [
   {
-    src: "/images/gc-hero/gc-hero-1-commercial-rehab.png",
-    alt: "Commercial brick building facade rehab with scaffolding and masonry crew in Central Pennsylvania",
-  },
-  {
     src: "/images/gc-hero/gc-hero-2-commercial-rehab.png",
     alt: "Interior gut renovation of a commercial building with structural steel and new framing",
   },
@@ -25,6 +21,10 @@ const heroImages = [
   {
     src: "/images/gc-hero/gc-hero-4-commercial-rehab.png",
     alt: "Adaptive reuse rehab of an old industrial mill building with new windows being installed",
+  },
+  {
+    src: "/images/gc-hero/gc-hero-1-commercial-rehab.png",
+    alt: "Commercial brick building facade rehab with scaffolding and masonry crew in Central Pennsylvania",
   },
 ];
 
