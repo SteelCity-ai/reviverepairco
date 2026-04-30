@@ -66,7 +66,8 @@ export default function GCHeroSection() {
           </div>
 
           <h1 className="max-w-2xl text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-7xl">
-            One trusted contractor for the build your home actually deserves.
+            Revive your project with Central PA&rsquo;s locally owned premier
+            general contractor.
           </h1>
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-white/82 sm:text-xl">
