@@ -39,7 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // service detail pages.
   const gcDetailPages: MetadataRoute.Sitemap = [
     { url: `${baseUrl}/general-contracting/additions`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
-    { url: `${baseUrl}/general-contracting/garages-outbuildings`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${baseUrl}/general-contracting/low-voltage-data`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
     { url: `${baseUrl}/general-contracting/renovations`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
     { url: `${baseUrl}/general-contracting/demolition`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
   ];

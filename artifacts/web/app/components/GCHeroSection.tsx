@@ -70,9 +70,10 @@ export default function GCHeroSection() {
           </h1>
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-white/82 sm:text-xl">
-            Revive Repair Company manages the whole job — additions, garages,
-            renovations, demolition, and roofing — under one licensed crew. Clear
-            scope, real timelines, and honest communication from day one.
+            Revive Repair Company manages the whole job — additions,
+            renovations, low-voltage and data, demolition, and roofing — under
+            one licensed crew. Clear scope, real timelines, and honest
+            communication from day one.
           </p>
 
           <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap">

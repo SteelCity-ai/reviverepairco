@@ -70,7 +70,7 @@ const CONFIGS: Record<Brand, BrandConfig> = {
     domain: "reviverepairco.com",
     metaTitle: "Revive Repair Company | Central PA General Contractor",
     metaDescription:
-      "Full-service general contracting across Central Pennsylvania — additions, garages, renovations, demolition, and roofing. Licensed, insured, and locally owned.",
+      "Full-service general contracting across Central Pennsylvania — additions, renovations, low-voltage and data cabling, demolition, and roofing. Licensed, insured, and locally owned.",
   },
 };
 

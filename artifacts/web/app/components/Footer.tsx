@@ -14,7 +14,7 @@ export default async function Footer() {
 
   const blurb =
     brand === "repair-co"
-      ? "Additions, garages, renovations, demolition, and roofing — one licensed local team handling the whole job."
+      ? "Additions, renovations, low-voltage and data, demolition, and roofing — one licensed local team handling the whole job."
       : "Premium local roofing with strong communication, emergency responsiveness, and a clear path to a free inspection.";
 
   return (

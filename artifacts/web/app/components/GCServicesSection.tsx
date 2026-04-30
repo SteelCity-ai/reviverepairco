@@ -19,12 +19,12 @@ const services = [
     href: "/general-contracting/renovations",
   },
   {
-    title: "Garages & Outbuildings",
+    title: "Low Voltage & Data",
     description:
-      "Detached garages, workshops, and pole barns built to match your home and stand up to Central PA winters.",
-    image: "/images/gallery-gc/gc-01-garage.png",
-    accent: "Match-to-home craftsmanship",
-    href: "/general-contracting/garages-outbuildings",
+      "Cat6/Cat6A network drops, fiber backbones, A/V, access control, and security cabling — pulled clean, tested, labeled, and documented.",
+    image: "/images/gc-hero/gc-low-voltage-data.png",
+    accent: "Tested & certified drops",
+    href: "/general-contracting/low-voltage-data",
   },
   {
     title: "Demolition & Site Prep",
@@ -48,8 +48,8 @@ export default function GCServicesSection() {
             Full-service general contracting for Central Pennsylvania homes.
           </h2>
           <p className="mt-4 text-lg leading-8 text-[var(--color-slate)]">
-            One licensed team handling additions, renovations, outbuildings, and
-            demolition — plus the roofing crews you already know.
+            One licensed team handling additions, renovations, low-voltage and
+            data, and demolition — plus the roofing crews you already know.
           </p>
         </div>
 
