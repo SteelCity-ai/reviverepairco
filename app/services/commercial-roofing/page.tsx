@@ -1,152 +1,152 @@
 import type { Metadata } from "next";
+import GCServicePage, {
+  type GCServicePageConfig,
+} from "../../components/GCServicePage";
+import { roofingProjects } from "../../components/galleryData";
+import { brandConfig, getBrand } from "../../../lib/brand";
 
-export const metadata: Metadata = {
-  title: "Commercial Roofing | Flat Roof Repair & Coating | Revive Roof Repair",
-  description:
-    "Expert commercial roofing in Central PA. Flat roof repair, coatings, maintenance programs. Minimize disruption, maximize protection. Call (717) 500-1434",
-  keywords:
-    "commercial roofing, flat roof repair, roof coating, industrial roofing, maintenance programs, Harrisburg, Hershey, York, Lancaster, Central PA",
+const ROOFING_DOMAIN = brandConfig("roofing").domain;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getBrand();
+  const config = brandConfig(brand);
+  return {
+    title: {
+      absolute: `Commercial Roofing | Flat Roof Repair & Coating | ${config.shortName}`,
+    },
+    description:
+      "Commercial flat-roof repair, replacement, coatings, and maintenance programs across Central PA. TPO, EPDM, modified bitumen — minimal disruption, documented work, scheduled inspections.",
+    keywords:
+      "commercial roofing, flat roof repair, TPO, EPDM, modified bitumen, roof coating, maintenance program, Harrisburg, Hershey, York, Lancaster, Central PA",
+    alternates: {
+      canonical: `https://${ROOFING_DOMAIN}/services/commercial-roofing`,
+    },
+    openGraph: {
+      url: `https://${ROOFING_DOMAIN}/services/commercial-roofing`,
+    },
+  };
+}
+
+const pageConfig: GCServicePageConfig = {
+  hero: {
+    eyebrow: "Commercial roofing",
+    title: "Flat-roof systems repaired, recoated, and replaced — without shutting you down.",
+    description:
+      "TPO, EPDM, and modified bitumen work for warehouses, retail, offices, and HOA properties. Phased work plans, after-hours scheduling, and maintenance programs that stop small problems from becoming six-figure ones.",
+    image: "/images/gallery/10-flat-roof.webp",
+    imageAlt: "Completed commercial flat roof in Central Pennsylvania",
+  },
+  scope: {
+    eyebrow: "What we install & service",
+    heading: "Commercial roofing built around your operating schedule.",
+    intro:
+      "Commercial roofs fail differently than residential ones — slow leaks, ponding water, seam separation, ballast displacement. We diagnose what's actually happening on your roof and write a service plan that fits your budget and operating hours.",
+    bullets: [
+      "TPO single-ply membrane (mechanically attached & fully adhered)",
+      "EPDM rubber roofing repair and replacement",
+      "Modified bitumen and built-up roof systems",
+      "Elastomeric and silicone roof coatings",
+      "Flashing, scupper, and drain repair",
+      "Annual maintenance and inspection programs",
+    ],
+    sideTitle: "Built for commercial property owners",
+    sideItems: [
+      {
+        title: "After-hours scheduling",
+        desc: "We schedule tear-off and tie-in work around your operating hours so tenants and customers aren't impacted.",
+      },
+      {
+        title: "Phased work plans",
+        desc: "Larger roofs can be sectioned and replaced in phases that fit your CapEx schedule, not all at once.",
+      },
+      {
+        title: "Documented inspections",
+        desc: "Photo reports for every visit — useful for property management, insurance, and warranty records.",
+      },
+      {
+        title: "Maintenance programs",
+        desc: "Twice-a-year inspections and minor-repair allowances that catch failures before they become claims.",
+      },
+    ],
+  },
+  process: {
+    eyebrow: "How we work with property owners",
+    heading: "From assessment to a written service plan.",
+    description:
+      "Commercial work starts with the same playbook every time so you know what's wrong, what it costs, and how it gets done.",
+    steps: [
+      {
+        number: "01",
+        title: "Roof assessment",
+        body: "We walk the entire roof, document membrane condition, drains, flashings, and HVAC penetrations with photos.",
+      },
+      {
+        number: "02",
+        title: "Written service plan",
+        body: "Recommended repairs, coating options, or replacement scope — with line-item pricing and a realistic timeline.",
+      },
+      {
+        number: "03",
+        title: "Phased execution",
+        body: "Work is staged to minimize disruption: night and weekend shifts, sectional replacements, tenant notice in advance.",
+      },
+      {
+        number: "04",
+        title: "Maintenance handoff",
+        body: "Final walk, photo report, manufacturer warranty registration, and an optional annual maintenance plan.",
+      },
+    ],
+  },
+  gallery: {
+    eyebrow: "Recent commercial work",
+    heading: "Flat-roof projects from the Revive crew.",
+    subheading:
+      "Commercial flat-roof installs, coatings, and torch-down membrane work across Harrisburg and Central PA.",
+    projects: [
+      roofingProjects[9],
+      roofingProjects[10],
+      roofingProjects[6],
+      roofingProjects[7],
+      roofingProjects[5],
+    ],
+  },
+  faq: {
+    eyebrow: "Common questions",
+    heading: "Commercial roofing, answered.",
+    items: [
+      {
+        q: "Should I recoat or replace my flat roof?",
+        a: "Depends on the membrane condition and age. A roof with intact membrane and isolated leaks is often a great candidate for a silicone or elastomeric coating — adds 10+ years of life at a fraction of replacement cost. We'll tell you straight which one your roof is.",
+      },
+      {
+        q: "Can you work without shutting down the building?",
+        a: "Yes. Most commercial work is done in phases, after hours, or on weekends so business operations and HVAC keep running. We coordinate access, parking, and tenant notice with property management.",
+      },
+      {
+        q: "What warranty comes with a commercial replacement?",
+        a: "Manufacturer system warranties (Carlisle, GAF Commercial, Firestone) of 15–30 years on materials, plus our workmanship warranty. We register the warranty in your name before the project closes.",
+      },
+      {
+        q: "Do you offer maintenance contracts?",
+        a: "Yes. Most clients opt for twice-a-year inspections (spring and fall) with documented photo reports and a small repair allowance. It's the cheapest insurance against a leak that takes out a tenant's inventory.",
+      },
+      {
+        q: "What's the difference between TPO and EPDM?",
+        a: "TPO is white, reflective, and energy-efficient — great for cooling-cost reduction. EPDM is black rubber, extremely durable, and easier to repair down the road. Both are excellent — the right choice depends on your building, budget, and energy goals.",
+      },
+    ],
+  },
+  cta: {
+    eyebrow: "Built for property managers",
+    heading: "Get a documented commercial roof assessment.",
+    body: "Free walkthrough and a written service plan with line-item pricing — useful even if you're just budgeting for next year's CapEx.",
+  },
+  backLink: {
+    label: "← All roofing services",
+    href: "/roofing",
+  },
 };
 
-export default function CommercialRoofing() {
-  return (
-    <div className="flex flex-col">
-      {/* Hero */}
-      <section className="relative bg-[#1a1a2e] py-20">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a2e] via-[#2d2d44] to-[#1a1a2e]" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="text-6xl mb-4">🏢</div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Commercial Roofing
-          </h1>
-          <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-            From office buildings to warehouses, we provide complete commercial roofing
-            solutions. Minimize disruption to your business while maximizing protection.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a
-              href="tel:+17175001434"
-              className="flex items-center gap-2 bg-[#e63946] hover:bg-[#c5303c] text-white font-bold py-4 px-8 rounded-lg transition-all text-lg"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-              </svg>
-              CALL NOW: (717) 500-1434
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Content */}
-      <section className="bg-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                Complete Commercial Roofing Solutions
-              </h2>
-              <p className="text-lg text-gray-600 mb-6">
-                We understand the unique challenges of commercial roofing - minimal
-                disruption, budget constraints, and long-term value. Our team delivers
-                solutions that protect your investment.
-              </p>
-
-              <div className="space-y-4 mb-8">
-                {[
-                  "Flat roof repair and restoration",
-                  "Roof coatings to extend lifespan",
-                  "Preventive maintenance programs",
-                  "Single-ply systems (EPDM, TPO, PVC)",
-                  "Built-up and modified bitumen",
-                  "24/7 emergency service available",
-                ].map((item, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6 text-green-500 flex-shrink-0"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <span className="text-gray-700">{item}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="bg-[#1a1a2e] rounded-xl p-6 text-white">
-                <h3 className="font-bold text-xl mb-2">📅 Maintenance Programs</h3>
-                <p className="mb-4">
-                  Protect your roof investment with our scheduled maintenance programs.
-                  Regular inspections catch problems early.
-                </p>
-                <a
-                  href="tel:+17175001434"
-                  className="inline-flex items-center gap-2 bg-[#e63946] text-white font-bold py-2 px-6 rounded-lg transition-all"
-                >
-                  Call (717) 500-1434
-                </a>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                Commercial Services
-              </h3>
-              <div className="space-y-4">
-                {[
-                  { title: "Flat Roof Systems", desc: "EPDM, TPO, PVC, and built-up systems for warehouses, offices, and retail" },
-                  { title: "Roof Coatings", desc: "Extend your roof&apos;s life with elastomeric coatings - reflects UV, prevents leaks" },
-                  { title: "Emergency Repairs", desc: "Fast response to minimize business disruption and property damage" },
-                  { title: "Maintenance Plans", desc: "Scheduled inspections and minor repairs to maximize roof lifespan" },
-                  { title: "New Construction", desc: "Complete installation for new commercial buildings and additions" },
-                ].map((item, index) => (
-                  <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                    <h4 className="font-semibold text-gray-900">{item.title}</h4>
-                    <p className="text-gray-600 text-sm">{item.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="bg-gray-50 py-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-            Need Commercial Roofing Services?
-          </h2>
-          <p className="text-gray-600 mb-6">
-            From a small repair to a complete re-roofing, we deliver quality work
-            with minimal disruption to your business.
-          </p>
-          <a
-            href="tel:+17175001434"
-            className="inline-flex items-center gap-2 bg-[#e63946] text-white font-bold py-3 px-8 rounded-lg transition-all text-lg"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-            </svg>
-            (717) 500-1434
-          </a>
-        </div>
-      </section>
-    </div>
-  );
+export default function CommercialRoofingPage() {
+  return <GCServicePage config={pageConfig} />;
 }

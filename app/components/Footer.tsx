@@ -1,24 +1,35 @@
 import Image from "next/image";
+import { getBrand, brandConfig } from "../../lib/brand";
 
 const serviceAreas = ["Harrisburg", "Mechanicsburg", "Hershey", "Camp Hill", "Carlisle", "Lancaster"];
 
-export default function Footer() {
+export default async function Footer() {
+  const brand = await getBrand();
+  const config = brandConfig(brand);
+
+  const tagline =
+    brand === "repair-co"
+      ? "Full-service general contracting in Central Pennsylvania"
+      : "Roof repair & replacement in Central Pennsylvania";
+
+  const blurb =
+    brand === "repair-co"
+      ? "Additions, renovations, low-voltage and data, demolition, and roofing — one licensed local team handling the whole job."
+      : "Premium local roofing with strong communication, emergency responsiveness, and a clear path to a free inspection.";
+
   return (
     <footer className="bg-[var(--color-primary)] text-white">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-3 lg:px-8 lg:py-16">
         <div>
-          <div className="flex items-center gap-4">
-            <div className="relative h-14 w-14 overflow-hidden rounded-2xl bg-white/8 p-2">
-              <Image src="/images/logo-color-primary.png" alt="Revive Roof Repair logo" fill className="object-contain p-2" />
-            </div>
-            <div>
-              <p className="text-lg font-bold">Revive Roof Repair</p>
-              <p className="text-sm text-white/65">Roof repair & replacement in Central Pennsylvania</p>
-            </div>
-          </div>
-          <p className="mt-6 max-w-sm text-sm leading-7 text-white/68">
-            Premium local roofing with strong communication, emergency responsiveness, and a clear path to a free inspection.
-          </p>
+          <Image
+            src={config.logo}
+            alt={config.logoAlt}
+            width={480}
+            height={340}
+            className="h-32 w-auto brightness-0 invert"
+          />
+          <p className="mt-4 text-sm text-white/65">{tagline}</p>
+          <p className="mt-6 max-w-sm text-sm leading-7 text-white/68">{blurb}</p>
         </div>
 
         <div>
@@ -26,7 +37,7 @@ export default function Footer() {
           <div className="mt-5 space-y-3 text-sm text-white/74">
             <p><a href="tel:+17175001434" className="transition hover:text-white">(717) 500-1434</a></p>
             <p>Serving Harrisburg and surrounding Central PA communities</p>
-            <p>Licensed & insured roofing contractor</p>
+            <p>Licensed &amp; insured contractor</p>
             <p>Fast estimate requests and emergency response availability</p>
           </div>
         </div>
@@ -42,8 +53,8 @@ export default function Footer() {
       </div>
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-5 text-sm text-white/52 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <p>© {new Date().getFullYear()} Revive Roof Repair. All rights reserved.</p>
-          <p>Phase 2 homepage redesign foundation for reviveroofrepair.com</p>
+          <p>© {new Date().getFullYear()} {config.name}. All rights reserved.</p>
+          <p>{config.domain}</p>
         </div>
       </div>
     </footer>

@@ -6,7 +6,7 @@ export default function ContactSection() {
   const [submitted, setSubmitted] = useState(false);
 
   return (
-    <section id="contact" className="bg-[var(--color-surface)] py-20 sm:py-24">
+    <section id="contact" className="scroll-mt-24 bg-[var(--color-surface)] py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
           <div className="rounded-[32px] bg-[var(--color-primary)] p-8 text-white shadow-[0_26px_70px_rgba(15,23,42,0.16)] sm:p-10">

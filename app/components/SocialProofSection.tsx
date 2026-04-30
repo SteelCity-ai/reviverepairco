@@ -24,7 +24,7 @@ const proof = [
 
 export default function SocialProofSection() {
   return (
-    <section className="bg-[var(--color-primary)] py-20 text-white sm:py-24">
+    <section id="reviews" className="scroll-mt-24 bg-[var(--color-primary)] py-20 text-white sm:py-24">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:px-8">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[var(--color-amber)]">

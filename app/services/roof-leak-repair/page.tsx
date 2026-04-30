@@ -1,151 +1,152 @@
 import type { Metadata } from "next";
+import GCServicePage, {
+  type GCServicePageConfig,
+} from "../../components/GCServicePage";
+import { roofingProjects } from "../../components/galleryData";
+import { brandConfig, getBrand } from "../../../lib/brand";
 
-export const metadata: Metadata = {
-  title: "Roof Leak Repair | Fast Leak Detection & Fix | Revive Roof Repair",
-  description:
-    "Expert roof leak repair in Central PA. Fast detection, professional fix. Stop water damage before it spreads. Free inspection. Call (717) 500-1434",
-  keywords:
-    "roof leak repair, leak detection, water damage repair, ceiling leak, roof patching, Harrisburg leak repair, Hershey, York, Lancaster",
+const ROOFING_DOMAIN = brandConfig("roofing").domain;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getBrand();
+  const config = brandConfig(brand);
+  return {
+    title: {
+      absolute: `Roof Leak Repair | Fast Leak Detection & Fix | ${config.shortName}`,
+    },
+    description:
+      "Fast roof leak detection and repair across Harrisburg and Central PA. We trace the source, fix the flashing, and document the damage so the leak actually stops — not just the drip.",
+    keywords:
+      "roof leak repair, leak detection, water damage, ceiling leak, flashing repair, vent boot leak, Harrisburg, Hershey, York, Lancaster, Central PA",
+    alternates: {
+      canonical: `https://${ROOFING_DOMAIN}/services/roof-leak-repair`,
+    },
+    openGraph: {
+      url: `https://${ROOFING_DOMAIN}/services/roof-leak-repair`,
+    },
+  };
+}
+
+const pageConfig: GCServicePageConfig = {
+  hero: {
+    eyebrow: "Roof leak repair",
+    title: "Find the leak. Fix it once. Stop the damage spreading.",
+    description:
+      "Water on the ceiling almost never enters where it shows up. We trace the leak back to the actual source — flashing, vent boot, valley, or skylight — and rebuild the detail so it stays sealed.",
+    image: "/images/services/repair.jpg",
+    imageAlt: "Roofer repairing flashing on a residential roof in Central Pennsylvania",
+  },
+  scope: {
+    eyebrow: "What we repair",
+    heading: "Most leaks aren't the shingles — they're the details around them.",
+    intro:
+      "After 15+ years of leak calls in Central PA, the same five culprits show up over and over. We diagnose the actual entry point, fix the failed detail, and check the surrounding system so you're not back on the phone next storm.",
+    bullets: [
+      "Pipe boot and vent flashing failures",
+      "Step flashing on chimneys, dormers, and walls",
+      "Valley repairs and ice-dam damage",
+      "Skylight reseals and full re-flashing",
+      "Wind-lifted or missing shingle replacement",
+      "Hidden decking and underlayment damage",
+    ],
+    sideTitle: "Included with every leak call",
+    sideItems: [
+      {
+        title: "Source diagnosis",
+        desc: "We trace the water back to the actual entry point — not just patch the spot the drywall stained.",
+      },
+      {
+        title: "Photo documentation",
+        desc: "Before-and-after photos of every repair, ready for your records or an insurance claim.",
+      },
+      {
+        title: "Interior damage check",
+        desc: "We look in the attic for wet insulation, stained sheathing, and active drips so nothing gets missed.",
+      },
+      {
+        title: "Workmanship warranty",
+        desc: "Every repair is backed in writing. If the same spot leaks again, we come back and own it.",
+      },
+    ],
+  },
+  process: {
+    eyebrow: "How a leak call runs",
+    heading: "From the call to a dry ceiling, in four steps.",
+    description:
+      "Leak calls are urgent — but rushing the diagnosis is how the same leak comes back six months later. Here's how we work through it.",
+    steps: [
+      {
+        number: "01",
+        title: "Same- or next-day inspection",
+        body: "We get a tech on the roof and into the attic to find the actual source — not the spot directly above the stain.",
+      },
+      {
+        number: "02",
+        title: "Written diagnosis & quote",
+        body: "Photos of the failed detail, a clear explanation of what's wrong, and a fixed price for the fix.",
+      },
+      {
+        number: "03",
+        title: "Repair & weather seal",
+        body: "We rebuild the failed detail — flashing, boot, shingle, or valley — using the right materials for a long-term seal.",
+      },
+      {
+        number: "04",
+        title: "Verify & document",
+        body: "Hose-test or wait for the next storm, then walk the attic with you to confirm everything stays dry.",
+      },
+    ],
+  },
+  gallery: {
+    eyebrow: "Recent repair work",
+    heading: "Roof details and repairs we've handled this year.",
+    subheading:
+      "Flashing rebuilds, vent-boot replacements, valley work, and shingle repairs across Harrisburg and the surrounding area.",
+    projects: [
+      roofingProjects[1],
+      roofingProjects[2],
+      roofingProjects[3],
+      roofingProjects[4],
+      roofingProjects[5],
+    ],
+  },
+  faq: {
+    eyebrow: "Common questions",
+    heading: "Leak repair, answered.",
+    items: [
+      {
+        q: "How fast can someone come out?",
+        a: "For active leaks we aim for same- or next-day. If it's actively dripping into the house, call (717) 500-1434 and we'll get a tarp on it the same day if needed.",
+      },
+      {
+        q: "Why does the leak inside not match where the roof is failing?",
+        a: "Water hits the deck, runs down the underlayment or a rafter, and shows up on the ceiling sometimes 6–12 feet away from the actual entry point. We trace it back to the real source instead of guessing.",
+      },
+      {
+        q: "Is a single leak a sign I need a full replacement?",
+        a: "Almost never. Most leaks are a failed detail — a cracked vent boot, a lifted shingle, a step-flashing miss. We tell you straight whether you need a repair or a replacement, and we don't upsell.",
+      },
+      {
+        q: "Will you document the damage for an insurance claim?",
+        a: "Yes. We provide photos, a written cause-of-loss report, and an itemized scope your adjuster can work with. We've worked with most major Pennsylvania carriers.",
+      },
+      {
+        q: "Do you warranty leak repairs?",
+        a: "Yes — every repair is backed in writing. If the same spot leaks again within the warranty period, we come back at no charge.",
+      },
+    ],
+  },
+  cta: {
+    eyebrow: "Don't wait it out",
+    heading: "Active leak? Let's stop it today.",
+    body: "Call us, send a photo of the stain, or request an inspection. We'll get a tech on the roof and the leak diagnosed before it spreads.",
+  },
+  backLink: {
+    label: "← All roofing services",
+    href: "/roofing",
+  },
 };
 
-export default function RoofLeakRepair() {
-  return (
-    <div className="flex flex-col">
-      {/* Hero */}
-      <section className="relative bg-[#1a1a2e] py-20">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a2e] via-[#2d2d44] to-[#1a1a2e]" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="text-6xl mb-4">💧</div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Roof Leak Repair
-          </h1>
-          <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-            Water stains on your ceiling? Missing shingles? We find the source fast and
-            fix it right. Don&apos;t let small leaks become big problems.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a
-              href="tel:+17175001434"
-              className="flex items-center gap-2 bg-[#e63946] hover:bg-[#c5303c] text-white font-bold py-4 px-8 rounded-lg transition-all text-lg"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-              </svg>
-              CALL NOW: (717) 500-1434
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Content */}
-      <section className="bg-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                Stop Leaks Before They Spread
-              </h2>
-              <p className="text-lg text-gray-600 mb-6">
-                A small leak can cause major damage - ruined drywall, mold growth, damaged
-                insulation, and compromised structural integrity. We respond fast to stop
-                the damage at its source.
-              </p>
-
-              <div className="space-y-4 mb-8">
-                {[
-                  "Expert leak detection - we find the source",
-                  "Fast repairs using quality materials",
-                  "Check for hidden water damage",
-                  "Prevent future leaks with proper flashing",
-                  "Free comprehensive inspection",
-                ].map((item, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6 text-green-500 flex-shrink-0"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <span className="text-gray-700">{item}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="bg-[#e63946] rounded-xl p-6 text-white">
-                <h3 className="font-bold text-xl mb-2">⚠️ Warning Signs</h3>
-                <p className="mb-4">
-                  Water stains, musty odors, peeling paint, or higher humidity? Don&apos;t ignore
-                  these signals.
-                </p>
-                <a
-                  href="tel:+17175001434"
-                  className="inline-flex items-center gap-2 bg-white text-[#e63946] font-bold py-2 px-6 rounded-lg transition-all"
-                >
-                  Call (717) 500-1434
-                </a>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                Common Causes of Roof Leaks
-              </h3>
-              <div className="space-y-4">
-                {[
-                  { title: "Damaged Flashing", desc: "Sealant around chimneys, vents, and skylights breaks down over time" },
-                  { title: "Missing Shingles", desc: "Wind storms can lift and remove shingles, exposing the underlayment" },
-                  { title: "Cracked Vent Booths", desc: "Rubber boots around roof vents crack and allow water intrusion" },
-                  { title: "Ice Dams", desc: "Ice buildup can force water under shingles and into your home" },
-                  { title: "Aging Materials", desc: "Roof materials deteriorate over time, losing their waterproof integrity" },
-                ].map((item, index) => (
-                  <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                    <h4 className="font-semibold text-gray-900">{item.title}</h4>
-                    <p className="text-gray-600 text-sm">{item.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="bg-gray-50 py-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-            Have a Leak? Call Now!
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Every hour counts when water is entering your home. We offer fast, reliable
-            repairs.
-          </p>
-          <a
-            href="tel:+17175001434"
-            className="inline-flex items-center gap-2 bg-[#e63946] text-white font-bold py-3 px-8 rounded-lg transition-all text-lg"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-            </svg>
-            (717) 500-1434
-          </a>
-        </div>
-      </section>
-    </div>
-  );
+export default function RoofLeakRepairPage() {
+  return <GCServicePage config={pageConfig} />;
 }

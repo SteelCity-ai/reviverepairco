@@ -5,28 +5,28 @@ const services = [
     title: "Roof Repair",
     description:
       "Fast leak detection, shingle repairs, flashing fixes, and permanent solutions before interior damage spreads.",
-    image: "/images/service-repair.jpg",
+    image: "/images/services/repair.jpg",
     accent: "Rapid response for active leaks",
   },
   {
     title: "Roof Replacement",
     description:
       "Full tear-offs and replacements designed for curb appeal, ventilation, and long-term weather resilience.",
-    image: "/images/service-replacement.jpg",
+    image: "/images/services/replacement.jpg",
     accent: "Premium shingles and clean installs",
   },
   {
     title: "Storm Damage Recovery",
     description:
       "Emergency tarping, damage documentation, and repair planning after hail, wind, or tree impact events.",
-    image: "/images/service-storm.jpg",
+    image: "/images/services/storm.jpg",
     accent: "Insurance-ready documentation",
   },
 ];
 
 export default function ServicesSection() {
   return (
-    <section className="bg-white py-20 sm:py-24">
+    <section id="services" className="scroll-mt-24 bg-white py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[var(--color-amber)]">
@@ -52,6 +52,7 @@ export default function ServicesSection() {
                   src={service.image}
                   alt={service.title}
                   fill
+                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                   className="object-cover transition duration-500 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(26,32,44,0.72))]" />
