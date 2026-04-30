@@ -23,8 +23,8 @@ const heroImages = [
     alt: "Adaptive reuse rehab of an old industrial mill building with new windows being installed",
   },
   {
-    src: "/images/gc-hero/gc-hero-1-commercial-rehab.png",
-    alt: "Commercial brick building facade rehab with scaffolding and masonry crew in Central Pennsylvania",
+    src: "/images/gc-hero/gc-low-voltage-data.png",
+    alt: "Network technician installing structured Cat6 cabling in a commercial building ceiling",
   },
 ];
 
