@@ -14,6 +14,20 @@ export function brandFromHostname(host: string): Brand {
   return "roofing";
 }
 
+const PRODUCTION_HOSTS = new Set([
+  "reviverepairco.com",
+  "www.reviverepairco.com",
+  "reviveroofrepair.com",
+  "www.reviveroofrepair.com",
+]);
+
+export function isPreviewHost(host: string): boolean {
+  const cleaned = host.toLowerCase().split(":")[0].trim();
+  return !PRODUCTION_HOSTS.has(cleaned);
+}
+
+export const BRAND_OVERRIDE_COOKIE = "revive_brand_override";
+
 export async function getBrand(): Promise<Brand> {
   const h = await headers();
   const fromMiddleware = h.get("x-revive-brand");
