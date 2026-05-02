@@ -145,6 +145,17 @@ const pageConfig: GCServicePageConfig = {
     label: "← All roofing services",
     href: "/roofing",
   },
+  seo: {
+    pagePath: "/services/storm-damage-repair",
+    serviceName: "Storm Damage Roof Repair",
+    serviceDescription:
+      "Hail, wind, and storm damage roof repair across Central PA — full inspection, insurance documentation, adjuster meet-on-site, and repair or full replacement by one accountable Revive crew.",
+    brandOverride: "roofing",
+    breadcrumbs: [
+      { name: "Roofing Services", path: "/roofing" },
+      { name: "Storm Damage Repair" },
+    ],
+  },
 };
 
 export default function StormDamageRepairPage() {

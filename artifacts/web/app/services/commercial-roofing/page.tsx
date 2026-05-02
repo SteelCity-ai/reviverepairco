@@ -145,6 +145,17 @@ const pageConfig: GCServicePageConfig = {
     label: "← All roofing services",
     href: "/roofing",
   },
+  seo: {
+    pagePath: "/services/commercial-roofing",
+    serviceName: "Commercial Roofing",
+    serviceDescription:
+      "Commercial flat-roof repair, replacement, coatings, and maintenance programs across Central PA — TPO, EPDM, and modified bitumen with phased schedules and documented inspections.",
+    brandOverride: "roofing",
+    breadcrumbs: [
+      { name: "Roofing Services", path: "/roofing" },
+      { name: "Commercial Roofing" },
+    ],
+  },
 };
 
 export default function CommercialRoofingPage() {

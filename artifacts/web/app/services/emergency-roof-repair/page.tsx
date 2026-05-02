@@ -145,6 +145,17 @@ const pageConfig: GCServicePageConfig = {
     label: "← All roofing services",
     href: "/roofing",
   },
+  seo: {
+    pagePath: "/services/emergency-roof-repair",
+    serviceName: "Emergency Roof Repair",
+    serviceDescription:
+      "24/7 emergency roof repair across Harrisburg and Central PA — same-day tarping, fallen-tree response, active leak stabilization, and insurance documentation from the first visit.",
+    brandOverride: "roofing",
+    breadcrumbs: [
+      { name: "Roofing Services", path: "/roofing" },
+      { name: "Emergency Roof Repair" },
+    ],
+  },
 };
 
 export default function EmergencyRoofRepairPage() {

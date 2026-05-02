@@ -146,6 +146,17 @@ const pageConfig: GCServicePageConfig = {
     label: "← All roofing services",
     href: "/roofing",
   },
+  seo: {
+    pagePath: "/services/roof-replacement",
+    serviceName: "Roof Replacement",
+    serviceDescription:
+      "Full residential and light-commercial roof replacement across Harrisburg and Central PA — asphalt shingle, metal, and flat-roof systems with manufacturer-backed warranties.",
+    brandOverride: "roofing",
+    breadcrumbs: [
+      { name: "Roofing Services", path: "/roofing" },
+      { name: "Roof Replacement" },
+    ],
+  },
 };
 
 export default function RoofReplacementPage() {

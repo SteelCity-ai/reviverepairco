@@ -4,6 +4,7 @@ import ContactSection from "./ContactSection";
 import GallerySection from "./GallerySection";
 import TrustBadges from "./TrustBadges";
 import type { Project } from "./galleryData";
+import { brandConfig, getBrand, type Brand } from "../../lib/brand";
 
 export type GCServicePageConfig = {
   hero: {
@@ -48,15 +49,151 @@ export type GCServicePageConfig = {
     label: string;
     href: string;
   };
+  seo?: {
+    /** Path for this page, e.g. "/services/roof-replacement". */
+    pagePath: string;
+    /** Human-readable service name, e.g. "Roof Replacement". */
+    serviceName: string;
+    /**
+     * Optional short description used for the Service JSON-LD `description` field.
+     * Falls back to the hero description when omitted.
+     */
+    serviceDescription?: string;
+    /** Optional override for the brand domain used in absolute URLs. */
+    brandOverride?: Brand;
+    /**
+     * Breadcrumb trail. Should NOT include "Home" — that is prepended automatically.
+     * The final entry is treated as the current page (no URL emitted).
+     */
+    breadcrumbs: { name: string; path?: string }[];
+  };
 };
 
-export default function GCServicePage({ config }: { config: GCServicePageConfig }) {
+const SERVICE_AREA_CITIES = [
+  "Harrisburg",
+  "Hershey",
+  "Mechanicsburg",
+  "York",
+  "Lancaster",
+  "Carlisle",
+];
+
+function buildServiceJsonLd(
+  config: GCServicePageConfig,
+  origin: string,
+  brand: Brand,
+) {
+  const seo = config.seo!;
+  const brandInfo = brandConfig(brand);
+  const providerType =
+    brand === "repair-co" ? "GeneralContractor" : "RoofingContractor";
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: seo.serviceName,
+    serviceType: seo.serviceName,
+    description: seo.serviceDescription ?? config.hero.description,
+    url: `${origin}${seo.pagePath}`,
+    image: `${origin}${config.hero.image}`,
+    provider: {
+      "@type": providerType,
+      name: brandInfo.name,
+      telephone: "+1-717-500-1434",
+      url: `${origin}/`,
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "Harrisburg",
+        addressRegion: "PA",
+        addressCountry: "US",
+      },
+    },
+    areaServed: SERVICE_AREA_CITIES.map((city) => ({
+      "@type": "City",
+      name: city,
+      containedInPlace: {
+        "@type": "AdministrativeArea",
+        name: "Central Pennsylvania",
+      },
+    })),
+  };
+}
+
+function buildFaqJsonLd(config: GCServicePageConfig) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: config.faq.items.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.a,
+      },
+    })),
+  };
+}
+
+function buildBreadcrumbJsonLd(config: GCServicePageConfig, origin: string) {
+  const seo = config.seo!;
+  const trail = [
+    { name: "Home", path: "/" },
+    ...seo.breadcrumbs.slice(0, -1),
+    {
+      name: seo.breadcrumbs[seo.breadcrumbs.length - 1].name,
+      path: seo.pagePath,
+    },
+  ];
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: trail.map((entry, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: entry.name,
+      item: `${origin}${entry.path}`,
+    })),
+  };
+}
+
+export default async function GCServicePage({
+  config,
+}: {
+  config: GCServicePageConfig;
+}) {
   const backLink = config.backLink ?? {
     label: "← All general contracting",
     href: "/general-contracting",
   };
+
+  let jsonLdScripts: React.ReactNode = null;
+  if (config.seo) {
+    const runtimeBrand = await getBrand();
+    const brand = config.seo.brandOverride ?? runtimeBrand;
+    const origin = `https://${brandConfig(brand).domain}`;
+    const serviceLd = buildServiceJsonLd(config, origin, brand);
+    const faqLd = buildFaqJsonLd(config);
+    const breadcrumbLd = buildBreadcrumbJsonLd(config, origin);
+    jsonLdScripts = (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+        />
+      </>
+    );
+  }
+
   return (
     <div className="flex flex-col bg-white">
+      {jsonLdScripts}
       {/* Hero */}
       <section className="relative isolate overflow-hidden bg-[var(--color-primary)] text-white">
         <Image

@@ -145,6 +145,17 @@ const pageConfig: GCServicePageConfig = {
     label: "← All roofing services",
     href: "/roofing",
   },
+  seo: {
+    pagePath: "/services/roof-leak-repair",
+    serviceName: "Roof Leak Repair",
+    serviceDescription:
+      "Fast roof leak detection and repair across Harrisburg and Central PA — flashing, vent boots, valleys, and skylights diagnosed back to the actual source and fixed for good.",
+    brandOverride: "roofing",
+    breadcrumbs: [
+      { name: "Roofing Services", path: "/roofing" },
+      { name: "Roof Leak Repair" },
+    ],
+  },
 };
 
 export default function RoofLeakRepairPage() {
