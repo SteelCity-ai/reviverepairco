@@ -22,9 +22,87 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function GeneralContractingPage() {
+export default async function GeneralContractingPage() {
+  const brand = await getBrand();
+  const config = brandConfig(brand);
+  const baseUrl = `https://${config.domain}`;
+  const pageUrl = `${baseUrl}/general-contracting`;
+
+  const serviceSchema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: "General Contracting",
+    serviceType: "General Contracting",
+    description:
+      "Full-service general contracting across Central Pennsylvania — additions, low voltage and data cabling, renovations, and demolition. Licensed, insured, and locally owned.",
+    url: pageUrl,
+    areaServed: {
+      "@type": "AdministrativeArea",
+      name: "Central Pennsylvania",
+    },
+    provider: { "@id": `${baseUrl}/#business` },
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: "General Contracting Services",
+      itemListElement: [
+        {
+          "@type": "Offer",
+          itemOffered: {
+            "@type": "Service",
+            name: "Home Additions & Room Expansions",
+            url: `${baseUrl}/general-contracting/additions`,
+          },
+        },
+        {
+          "@type": "Offer",
+          itemOffered: {
+            "@type": "Service",
+            name: "Low Voltage & Data Cabling",
+            url: `${baseUrl}/general-contracting/low-voltage-data`,
+          },
+        },
+        {
+          "@type": "Offer",
+          itemOffered: {
+            "@type": "Service",
+            name: "Home Renovations & Remodels",
+            url: `${baseUrl}/general-contracting/renovations`,
+          },
+        },
+        {
+          "@type": "Offer",
+          itemOffered: {
+            "@type": "Service",
+            name: "Demolition & Site Prep",
+            url: `${baseUrl}/general-contracting/demolition`,
+          },
+        },
+      ],
+    },
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: `${baseUrl}/` },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "General Contracting",
+        item: pageUrl,
+      },
+    ],
+  };
+
   return (
     <div id="top" className="flex flex-col bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([serviceSchema, breadcrumbSchema]),
+        }}
+      />
       <GCHeroSection />
       <div className="bg-white px-4 sm:px-6 lg:px-8">
         <TrustBadges />

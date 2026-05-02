@@ -25,6 +25,16 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const pageConfig: GCServicePageConfig = {
+  seo: {
+    pagePath: "/general-contracting/low-voltage-data",
+    serviceName: "Low Voltage & Data Cabling",
+    serviceDescription:
+      "Commercial low-voltage and structured data cabling across Harrisburg and Central Pennsylvania. Cat6/Cat6A network drops, fiber backbones, A/V, access control, and security cabling — installed clean, labeled, tested, and documented.",
+    breadcrumbs: [
+      { name: "General Contracting", path: "/general-contracting" },
+      { name: "Low Voltage & Data" },
+    ],
+  },
   hero: {
     eyebrow: "Low voltage & data",
     title: "Structured cabling and low-voltage systems, installed clean.",

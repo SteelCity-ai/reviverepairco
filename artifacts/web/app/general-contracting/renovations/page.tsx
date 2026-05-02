@@ -25,6 +25,16 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const pageConfig: GCServicePageConfig = {
+  seo: {
+    pagePath: "/general-contracting/renovations",
+    serviceName: "Home Renovations & Remodels",
+    serviceDescription:
+      "Kitchen, bathroom, basement, and whole-home renovations across Harrisburg and Central Pennsylvania. Design-through-finish from one accountable Revive crew with no subcontractor shuffle.",
+    breadcrumbs: [
+      { name: "General Contracting", path: "/general-contracting" },
+      { name: "Renovations" },
+    ],
+  },
   hero: {
     eyebrow: "Home renovations",
     title: "Kitchens, baths, basements — built to live in for the next 20 years.",

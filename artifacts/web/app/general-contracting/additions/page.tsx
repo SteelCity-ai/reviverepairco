@@ -25,6 +25,16 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const pageConfig: GCServicePageConfig = {
+  seo: {
+    pagePath: "/general-contracting/additions",
+    serviceName: "Home Additions & Room Expansions",
+    serviceDescription:
+      "Second-story additions, room additions, sun rooms, in-law suites, and full structural expansions across Harrisburg and Central Pennsylvania. Permits, framing, mechanicals, and finishes handled by one licensed Revive crew.",
+    breadcrumbs: [
+      { name: "General Contracting", path: "/general-contracting" },
+      { name: "Additions" },
+    ],
+  },
   hero: {
     eyebrow: "Home additions",
     title: "Add the room your family actually needs — built to look original.",

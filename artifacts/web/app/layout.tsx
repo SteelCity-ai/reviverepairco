@@ -44,6 +44,7 @@ export default async function RootLayout({
   const localBusinessSchema = {
     "@context": "https://schema.org",
     "@type": brand === "repair-co" ? "GeneralContractor" : "RoofingContractor",
+    "@id": `https://${config.domain}/#business`,
     name: config.name,
     telephone: "+1-717-500-1434",
     url: `https://${config.domain}`,

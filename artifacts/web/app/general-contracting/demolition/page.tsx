@@ -25,6 +25,16 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const pageConfig: GCServicePageConfig = {
+  seo: {
+    pagePath: "/general-contracting/demolition",
+    serviceName: "Demolition & Site Prep",
+    serviceDescription:
+      "Selective interior tear-outs, garage demolition, deck and shed removal, and site prep across Harrisburg and Central Pennsylvania. Safe, clean, fully-permitted demolition by Revive Repair Company.",
+    breadcrumbs: [
+      { name: "General Contracting", path: "/general-contracting" },
+      { name: "Demolition" },
+    ],
+  },
   hero: {
     eyebrow: "Demolition & site prep",
     title: "Tear it out cleanly so the next phase can actually start.",
