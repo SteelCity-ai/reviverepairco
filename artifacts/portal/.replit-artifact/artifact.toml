@@ -1,0 +1,32 @@
+kind = "web"
+previewPath = "/portal"
+title = "Revive Portal"
+version = "1.0.0"
+id = "artifacts/portal"
+router = "path"
+
+[[services]]
+name = "portal"
+paths = ["/portal"]
+localPort = 3001
+
+[services.development]
+run = "pnpm --filter @workspace/portal run dev"
+
+[services.production]
+
+[services.production.build]
+args = ["pnpm", "--filter", "@workspace/portal", "run", "build"]
+
+[services.production.build.env]
+NODE_ENV = "production"
+
+[services.production.run]
+args = ["pnpm", "--filter", "@workspace/portal", "run", "start"]
+
+[services.production.run.env]
+PORT = "3001"
+NODE_ENV = "production"
+
+[services.env]
+PORT = "3001"

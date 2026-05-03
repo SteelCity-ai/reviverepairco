@@ -1,4 +1,4 @@
-modules = ["nodejs-24", "python-3.11"]
+modules = ["nodejs-24", "python-3.11", "postgresql-16"]
 
 [deployment]
 router = "application"
@@ -21,6 +21,14 @@ path = "scripts/post-merge.sh"
 timeoutMs = 20000
 
 [[ports]]
+localPort = 3001
+externalPort = 3003
+
+[[ports]]
+localPort = 3002
+externalPort = 3002
+
+[[ports]]
 localPort = 8080
 externalPort = 8080
 
@@ -38,3 +46,10 @@ externalPort = 3000
 
 [nix]
 channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+VITE_CLERK_PUBLISHABLE_KEY = "pk_test_dmVyaWZpZWQtdGFkcG9sZS01Ny5jbGVyay5hY2NvdW50cy5kZXYk"
+INTERNAL_CRON_SECRET = "1f2a8bc22c8f6548788642d0f28fbfe7f35304b9ff67f5cb3becca39204660a2"
+NEXT_PUBLIC_API_URL = "/portal-api/api/v1"

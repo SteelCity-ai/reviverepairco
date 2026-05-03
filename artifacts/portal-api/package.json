@@ -1,0 +1,38 @@
+{
+  "name": "@workspace/portal-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "echo 'no build step (running via tsx)'",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "db:push": "drizzle-kit push --config ./drizzle.config.ts"
+  },
+  "dependencies": {
+    "@clerk/express": "^1.7.0",
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "drizzle-orm": "catalog:",
+    "express": "^5.2.1",
+    "helmet": "^8.1.0",
+    "multer": "^2.0.2",
+    "nodemailer": "^7.0.10",
+    "postgres": "^3.4.7",
+    "uuid": "^11.1.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/compression": "^1.8.1",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.0.0",
+    "@types/node": "catalog:",
+    "@types/nodemailer": "^7.0.4",
+    "@types/uuid": "^10.0.0",
+    "drizzle-kit": "^0.31.9",
+    "tsx": "catalog:",
+    "typescript": "~5.9.2"
+  }
+}

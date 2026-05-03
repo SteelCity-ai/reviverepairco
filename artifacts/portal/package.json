@@ -1,0 +1,30 @@
+{
+  "name": "@workspace/portal",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p ${PORT:-3001} -H 0.0.0.0",
+    "build": "next build",
+    "start": "next start -p ${PORT:-3001} -H 0.0.0.0",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@clerk/nextjs": "^6.39.0",
+    "lucide-react": "^0.469.0",
+    "next": "16.2.2",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.14",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "eslint": "^9.38.0",
+    "eslint-config-next": "16.2.2",
+    "tailwindcss": "catalog:",
+    "typescript": "~5.9.2"
+  }
+}

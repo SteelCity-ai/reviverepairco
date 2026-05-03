@@ -16,6 +16,9 @@ const devOrigins = Array.from(
 );
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: "/home/runner/workspace",
+  },
   allowedDevOrigins: devOrigins,
   images: {
     remotePatterns: [

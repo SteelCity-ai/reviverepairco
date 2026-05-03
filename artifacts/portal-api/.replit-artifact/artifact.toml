@@ -1,0 +1,31 @@
+kind = "api"
+previewPath = "/portal-api"
+title = "Revive Portal API"
+version = "1.0.0"
+id = "artifacts/portal-api"
+
+[[services]]
+name = "portal-api"
+paths = ["/portal-api"]
+localPort = 3002
+
+[services.development]
+run = "pnpm --filter @workspace/portal-api run dev"
+
+[services.production]
+
+[services.production.build]
+args = ["pnpm", "--filter", "@workspace/portal-api", "run", "build"]
+
+[services.production.build.env]
+NODE_ENV = "production"
+
+[services.production.run]
+args = ["pnpm", "--filter", "@workspace/portal-api", "run", "start"]
+
+[services.production.run.env]
+PORT = "3002"
+NODE_ENV = "production"
+
+[services.env]
+PORT = "3002"
