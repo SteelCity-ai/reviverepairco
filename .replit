@@ -54,3 +54,4 @@ VITE_CLERK_PUBLISHABLE_KEY = "pk_test_dmVyaWZpZWQtdGFkcG9sZS01Ny5jbGVyay5hY2NvdW
 NEXT_PUBLIC_API_URL = "/portal-api/api/v1"
 
 [userenv.production]
+INTERNAL_CRON_SECRET = "c76464733084088152c61ca58f4978ddd01d1a4e2c42851cad438abda4d20dcb"
