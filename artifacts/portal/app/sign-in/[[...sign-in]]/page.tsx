@@ -1,7 +1,14 @@
 import { SignIn } from "@clerk/nextjs";
 import Image from "next/image";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
-export default function SignInPage() {
+const BASE = process.env.PORTAL_BASE_PATH ?? "/portal";
+
+export default async function SignInPage() {
+  const { userId } = await auth();
+  if (userId) redirect(`${BASE}/`);
+
   return (
     <div className="flex min-h-screen">
       {/* Left Panel — Brand (matching existing split-panel login) */}
