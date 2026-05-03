@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-const router = Router();
+const router: Router = Router();
 
 // GET /api/v1/healthz — health check, no auth required
 router.get("/", (_req, res) => {

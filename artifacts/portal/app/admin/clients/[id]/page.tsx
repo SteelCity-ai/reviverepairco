@@ -1,79 +1,13 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 import { StatusBadge } from "@/components/ui/Badge";
 import { formatDate } from "@/lib/utils";
+import { api } from "@/lib/api-server";
 import type { Client, Project, ProjectStatus } from "@/lib/db";
 
-// ── Mock Data ──────────────────────────────────────────────────────────────
-
-interface ClientDetail extends Client {
-  projects: (Project & { clientCompanyName: string })[];
-}
-
-const MOCK_CLIENT: ClientDetail = {
-  id: "client-001",
-  companyName: "Smith Family Trust",
-  primaryContactName: "John Smith",
-  email: "john@smithfamilytrust.com",
-  phone: "412-555-0142",
-  billingAddress: { line1: "42 Elm Street", city: "Pittsburgh", state: "PA", zip: "15206" },
-  notes: "Prefers morning communication. Has two properties under management. All invoices should be emailed to john@smithfamilytrust.com and CC'd to their accountant at accountant@smithcpa.com.",
-  createdAt: "2026-01-10T09:00:00Z",
-  updatedAt: "2026-04-28T14:30:00Z",
-  projects: [
-    {
-      id: "proj-001",
-      clientId: "client-001",
-      name: "Smith Residence — Full Roof Replacement",
-      description: "Complete tear-off and replacement of asphalt shingle roof on 2-story colonial.",
-      siteAddress: { line1: "42 Elm Street", city: "Pittsburgh", state: "PA", zip: "15206" },
-      status: "ACTIVE",
-      projectManagerUserId: "user-001",
-      startDate: "2026-04-15",
-      targetEndDate: "2026-05-10",
-      actualEndDate: null,
-      invoiceStatus: "INVOICED",
-      createdAt: "2026-03-20T10:00:00Z",
-      updatedAt: "2026-04-28T14:30:00Z",
-      clientCompanyName: "Smith Family Trust",
-    },
-    {
-      id: "proj-007",
-      clientId: "client-001",
-      name: "Smith Rental Property — Roof Repair",
-      description: "Patch repair on rental property garage roof after storm damage.",
-      siteAddress: { line1: "18 Walnut Avenue", city: "Millvale", state: "PA", zip: "15209" },
-      status: "COMPLETE",
-      projectManagerUserId: "user-002",
-      startDate: "2026-02-10",
-      targetEndDate: "2026-02-11",
-      actualEndDate: "2026-02-11",
-      invoiceStatus: "PAID",
-      createdAt: "2026-02-01T08:00:00Z",
-      updatedAt: "2026-02-12T09:00:00Z",
-      clientCompanyName: "Smith Family Trust",
-    },
-    {
-      id: "proj-008",
-      clientId: "client-001",
-      name: "Smith Residence — Gutter Guard Install",
-      description: "LeafGuard gutter system on entire home and garage.",
-      siteAddress: { line1: "42 Elm Street", city: "Pittsburgh", state: "PA", zip: "15206" },
-      status: "PLANNED",
-      projectManagerUserId: "user-001",
-      startDate: "2026-06-01",
-      targetEndDate: "2026-06-02",
-      actualEndDate: null,
-      invoiceStatus: "NOT_INVOICED",
-      createdAt: "2026-04-28T10:00:00Z",
-      updatedAt: "2026-04-28T10:00:00Z",
-      clientCompanyName: "Smith Family Trust",
-    },
-  ],
-};
-
-// ── Helpers ────────────────────────────────────────────────────────────────
+export const dynamic = "force-dynamic";
 
 function formatAddress(addr: unknown): string {
   const a = addr as { line1?: string; city?: string; state?: string; zip?: string };
@@ -89,38 +23,46 @@ const STATUS_ORDER: Record<ProjectStatus, number> = {
   CANCELLED: 4,
 };
 
-// ── Page Component ─────────────────────────────────────────────────────────
+export default async function AdminClientDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const [client, projects] = await Promise.all([
+    api<Client>(`/clients/${id}`),
+    api<Project[]>(`/projects?clientId=${id}`),
+  ]);
 
-export default function AdminClientDetailPage() {
-  const sortedProjects = [...MOCK_CLIENT.projects].sort(
+  if (!client) notFound();
+
+  const sortedProjects = [...(projects ?? [])].sort(
     (a, b) => (STATUS_ORDER[a.status] ?? 5) - (STATUS_ORDER[b.status] ?? 5),
   );
 
   return (
     <div className="animate-fade-in-up space-y-8">
-      {/* Breadcrumb & Header */}
       <div>
         <nav className="mb-2 flex items-center gap-2 text-sm text-gray-400">
           <Link href="/admin/clients" className="hover:text-[var(--color-amber)] transition">
             Clients
           </Link>
           <span>/</span>
-          <span className="text-[var(--color-primary)]">{MOCK_CLIENT.companyName}</span>
+          <span className="text-[var(--color-primary)]">{client.companyName}</span>
         </nav>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-[var(--color-primary)]">{MOCK_CLIENT.companyName}</h1>
+            <h1 className="text-2xl font-bold text-[var(--color-primary)]">{client.companyName}</h1>
             <p className="mt-1 text-sm text-gray-500">
-              Primary Contact: {MOCK_CLIENT.primaryContactName} · Client since {formatDate(MOCK_CLIENT.createdAt)}
+              Primary Contact: {client.primaryContactName} · Client since {formatDate(client.createdAt)}
             </p>
           </div>
-          <Link href={`/admin/clients/${MOCK_CLIENT.id}/edit`}>
+          <Link href={`/admin/clients/${client.id}/edit`}>
             <Button variant="secondary">Edit Client</Button>
           </Link>
         </div>
       </div>
 
-      {/* Info Card */}
       <Card>
         <CardHeader>
           <h2 className="text-lg font-semibold text-[var(--color-primary)]">Client Information</h2>
@@ -131,19 +73,19 @@ export default function AdminClientDetailPage() {
               <dt className="text-xs font-medium uppercase tracking-wide text-gray-400">Email</dt>
               <dd className="mt-1 text-sm text-[var(--color-primary)]">
                 <a
-                  href={`mailto:${MOCK_CLIENT.email}`}
+                  href={`mailto:${client.email}`}
                   className="hover:text-[var(--color-amber)] transition"
                 >
-                  {MOCK_CLIENT.email}
+                  {client.email}
                 </a>
               </dd>
             </div>
             <div>
               <dt className="text-xs font-medium uppercase tracking-wide text-gray-400">Phone</dt>
               <dd className="mt-1 text-sm text-[var(--color-primary)]">
-                {MOCK_CLIENT.phone ? (
-                  <a href={`tel:${MOCK_CLIENT.phone}`} className="hover:text-[var(--color-amber)] transition">
-                    {MOCK_CLIENT.phone}
+                {client.phone ? (
+                  <a href={`tel:${client.phone}`} className="hover:text-[var(--color-amber)] transition">
+                    {client.phone}
                   </a>
                 ) : (
                   "—"
@@ -153,20 +95,20 @@ export default function AdminClientDetailPage() {
             <div>
               <dt className="text-xs font-medium uppercase tracking-wide text-gray-400">Total Projects</dt>
               <dd className="mt-1 text-sm font-semibold text-[var(--color-primary)]">
-                {MOCK_CLIENT.projects.length}
+                {sortedProjects.length}
               </dd>
             </div>
             <div className="sm:col-span-2 lg:col-span-3">
               <dt className="text-xs font-medium uppercase tracking-wide text-gray-400">Billing Address</dt>
               <dd className="mt-1 text-sm text-gray-600">
-                {formatAddress(MOCK_CLIENT.billingAddress)}
+                {formatAddress(client.billingAddress)}
               </dd>
             </div>
-            {MOCK_CLIENT.notes && (
+            {client.notes && (
               <div className="sm:col-span-2 lg:col-span-3">
                 <dt className="text-xs font-medium uppercase tracking-wide text-gray-400">Notes</dt>
                 <dd className="mt-1 rounded-lg bg-[var(--color-surface)] p-3 text-sm text-gray-600">
-                  {MOCK_CLIENT.notes}
+                  {client.notes}
                 </dd>
               </div>
             )}
@@ -174,7 +116,6 @@ export default function AdminClientDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Projects Section */}
       <div>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-[var(--color-primary)]">Projects</h2>

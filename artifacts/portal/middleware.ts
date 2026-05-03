@@ -4,7 +4,9 @@ import { NextResponse } from "next/server";
 const BASE_PATH = process.env.PORTAL_BASE_PATH ?? "/portal";
 
 const isPublicRoute = createRouteMatcher([
+  "/",
   "/sign-in(.*)",
+  "/sign-up(.*)",
   "/accept-invite(.*)",
   "/api/webhooks/clerk(.*)",
 ]);
@@ -27,19 +29,23 @@ export default clerkMiddleware(async (auth, req) => {
     return redirectTo(req, "/sign-in", true);
   }
 
-  const role = (sessionClaims?.publicMetadata as { role?: string })?.role ?? "CREW";
+  const role =
+    (sessionClaims?.publicMetadata as { role?: string } | undefined)?.role ??
+    "CREW";
 
   if (isAdminRoute(req) && role !== "ADMIN") {
-    return redirectTo(req, "/sign-in");
+    return redirectTo(req, "/");
   }
   if (isCrewRoute(req) && role !== "CREW" && role !== "ADMIN") {
-    return redirectTo(req, "/sign-in");
+    return redirectTo(req, "/");
   }
   if (isClientRoute(req) && role !== "CLIENT" && role !== "ADMIN") {
-    return redirectTo(req, "/sign-in");
+    return redirectTo(req, "/");
   }
 });
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|images/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };

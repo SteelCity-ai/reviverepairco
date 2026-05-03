@@ -24,7 +24,7 @@ import checklistsRouter from "./routes/checklists.js";
 import dailySummaryRouter from "./routes/daily-summary.js";
 import activityLogRouter from "./routes/activity-log.js";
 
-const app = express();
+const app: express.Express = express();
 const PORT = parseInt(process.env.PORT ?? "3002", 10);
 
 // ── Global middleware ──────────────────────────────────────────────────────

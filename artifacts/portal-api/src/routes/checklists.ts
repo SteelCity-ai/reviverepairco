@@ -10,7 +10,7 @@ import { eq } from "drizzle-orm";
 import { validate } from "../middleware/validate.js";
 import { requireAdmin, requireStaff } from "../middleware/auth.js";
 
-const router = Router();
+const router: Router = Router();
 
 const createTemplateBody = z.object({
   name: z.string().min(1),
@@ -49,7 +49,7 @@ router.post("/templates", requireAdmin, validate.body(createTemplateBody), async
 router.patch("/templates/:id", requireAdmin, async (req, res, next) => {
   try {
     const [updated] = await db.update(checklistTemplate).set(req.body)
-      .where(eq(checklistTemplate.id, req.params.id)).returning();
+      .where(eq(checklistTemplate.id, (req.params.id as string))).returning();
     if (!updated) return res.status(404).json({ error: "Template not found" });
     res.json(updated);
   } catch (err) { next(err); }
@@ -94,10 +94,10 @@ router.post("/instances", requireStaff, validate.body(createInstanceBody), async
 router.get("/instances/:id", requireStaff, async (req, res, next) => {
   try {
     const instance = await db.select().from(checklistInstance)
-      .where(eq(checklistInstance.id, req.params.id)).limit(1);
+      .where(eq(checklistInstance.id, (req.params.id as string))).limit(1);
     if (!instance[0]) return res.status(404).json({ error: "Instance not found" });
     const items = await db.select().from(checklistItemInstance)
-      .where(eq(checklistItemInstance.instanceId, req.params.id));
+      .where(eq(checklistItemInstance.instanceId, (req.params.id as string)));
     res.json({ ...instance[0], items });
   } catch (err) { next(err); }
 });
@@ -111,7 +111,7 @@ router.post("/items/:id/complete", requireStaff, async (req, res, next) => {
         completedAt: new Date(),
         completedByUserId: req.user!.userId,
       })
-      .where(eq(checklistItemInstance.id, req.params.id)).returning();
+      .where(eq(checklistItemInstance.id, (req.params.id as string))).returning();
     if (!item) return res.status(404).json({ error: "Item not found" });
     res.json(item);
   } catch (err) { next(err); }
@@ -122,7 +122,7 @@ router.post("/items/:id/fail", requireStaff, async (req, res, next) => {
   try {
     const [item] = await db.update(checklistItemInstance)
       .set({ status: "FAIL" })
-      .where(eq(checklistItemInstance.id, req.params.id)).returning();
+      .where(eq(checklistItemInstance.id, (req.params.id as string))).returning();
     if (!item) return res.status(404).json({ error: "Item not found" });
     res.json(item);
   } catch (err) { next(err); }

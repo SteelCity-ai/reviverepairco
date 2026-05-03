@@ -5,13 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "echo 'no build step (running via tsx)'",
+    "build": "tsc -p tsconfig.json",
     "start": "tsx src/index.ts",
     "typecheck": "tsc --noEmit",
     "db:push": "drizzle-kit push --config ./drizzle.config.ts"
   },
   "dependencies": {
-    "@clerk/express": "^1.7.0",
+    "@clerk/express": "^1.7.79",
+    "@replit/object-storage": "^1.0.0",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "drizzle-orm": "catalog:",
@@ -20,6 +21,7 @@
     "multer": "^2.0.2",
     "nodemailer": "^7.0.10",
     "postgres": "^3.4.7",
+    "svix": "^1.92.2",
     "uuid": "^11.1.0",
     "zod": "catalog:"
   },

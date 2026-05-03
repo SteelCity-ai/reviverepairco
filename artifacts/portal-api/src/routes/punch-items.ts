@@ -6,7 +6,7 @@ import { eq, and } from "drizzle-orm";
 import { validate } from "../middleware/validate.js";
 import { requireAdmin, requireStaff } from "../middleware/auth.js";
 
-const router = Router();
+const router: Router = Router();
 
 const createPunchItemSchema = z.object({
   description: z.string().min(1),
@@ -30,7 +30,7 @@ router.get("/", requireStaff, async (req, res, next) => {
     const conditions = [];
     if (projectId) conditions.push(eq(punchItem.projectId, projectId as string));
     if (assigneeId) conditions.push(eq(punchItem.assigneeId, assigneeId as string));
-    if (status) conditions.push(eq(punchItem.status, status as string));
+    if (status) conditions.push(eq(punchItem.status, status as "OPEN" | "IN_PROGRESS" | "RESOLVED" | "VERIFIED"));
     const items = await db.select().from(punchItem).where(and(...conditions)).orderBy(punchItem.createdAt);
     res.json(items);
   } catch (err) { next(err); }
@@ -56,7 +56,7 @@ router.patch("/:id", requireStaff, validate.body(updatePunchItemSchema), async (
     if (req.body.status === "VERIFIED" && req.user!.role !== "ADMIN") {
       return res.status(403).json({ error: "Only admins can verify punch items" });
     }
-    const [updated] = await db.update(punchItem).set(req.body).where(eq(punchItem.id, id)).returning();
+    const [updated] = await db.update(punchItem).set(req.body).where(eq(punchItem.id, id as string)).returning();
     if (!updated) return res.status(404).json({ error: "Punch item not found" });
     res.json(updated);
   } catch (err) { next(err); }

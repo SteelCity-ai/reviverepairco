@@ -6,7 +6,7 @@ import { eq, and } from "drizzle-orm";
 import { validate } from "../middleware/validate.js";
 import { requireStaff } from "../middleware/auth.js";
 
-const router = Router();
+const router: Router = Router();
 
 const createCOBody = z.object({
   projectId: z.string().uuid(),
@@ -51,7 +51,7 @@ router.post("/", requireStaff, validate.body(createCOBody), async (req, res, nex
 router.patch("/:id", requireStaff, async (req, res, next) => {
   try {
     const [updated] = await db.update(changeOrder).set(req.body)
-      .where(eq(changeOrder.id, req.params.id)).returning();
+      .where(eq(changeOrder.id, (req.params.id as string))).returning();
     if (!updated) return res.status(404).json({ error: "Change order not found" });
     res.json(updated);
   } catch (err) { next(err); }
@@ -62,7 +62,7 @@ router.post("/:id/send", requireStaff, async (req, res, next) => {
   try {
     const [co] = await db.update(changeOrder)
       .set({ status: "SENT" })
-      .where(eq(changeOrder.id, req.params.id)).returning();
+      .where(eq(changeOrder.id, (req.params.id as string))).returning();
     if (!co) return res.status(404).json({ error: "Change order not found" });
     res.json(co);
   } catch (err) { next(err); }
@@ -77,7 +77,7 @@ router.post("/:id/approve", requireStaff, async (req, res, next) => {
         clientApprovedAt: new Date(),
         clientApprovedByUserId: req.user!.userId,
       })
-      .where(eq(changeOrder.id, req.params.id)).returning();
+      .where(eq(changeOrder.id, (req.params.id as string))).returning();
     if (!co) return res.status(404).json({ error: "Change order not found" });
     res.json(co);
   } catch (err) { next(err); }
@@ -88,7 +88,7 @@ router.post("/:id/reject", requireStaff, validate.body(rejectBody), async (req, 
   try {
     const [co] = await db.update(changeOrder)
       .set({ status: "REJECTED" })
-      .where(eq(changeOrder.id, req.params.id)).returning();
+      .where(eq(changeOrder.id, (req.params.id as string))).returning();
     if (!co) return res.status(404).json({ error: "Change order not found" });
     // Note: rejectionReason from body is validated but the schema has no
     // dedicated rejection_reason column. Consider adding one or logging meta.

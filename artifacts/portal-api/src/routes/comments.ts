@@ -5,7 +5,7 @@ import { comment } from "../../lib/db/schema/portal.js";
 import { eq, and, desc } from "drizzle-orm";
 import { validate } from "../middleware/validate.js";
 
-const router = Router();
+const router: Router = Router();
 
 // ── Zod schemas ────────────────────────────────────────────────────────────
 

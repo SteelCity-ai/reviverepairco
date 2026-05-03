@@ -1,53 +1,123 @@
 import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import Link from "next/link";
+import { api } from "@/lib/api-server";
 
-export default function AdminDashboard() {
+interface ProjectRow {
+  id: string;
+  name: string;
+  status: string;
+  updatedAt: string;
+}
+interface MainTaskRow {
+  id: string;
+  name: string;
+  status: string;
+}
+interface DailyTaskRow {
+  id: string;
+  title: string;
+  status: string;
+  scheduledDate: string | null;
+}
+interface ActivityRow {
+  id: string;
+  verb: string;
+  entityType: string | null;
+  createdAt: string;
+}
+
+function todayET(): string {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return fmt.format(new Date());
+}
+
+export const dynamic = "force-dynamic";
+
+export default async function AdminDashboard() {
+  const today = todayET();
+  const [projects, mainTasks, todayTasks] = await Promise.all([
+    api<ProjectRow[]>("/projects"),
+    api<MainTaskRow[]>("/main-tasks"),
+    api<DailyTaskRow[]>(`/daily-tasks?date=${today}`),
+  ]);
+
+  const activeProjects = (projects ?? []).filter(
+    (p) => p.status === "ACTIVE" || p.status === "PLANNED",
+  ).length;
+  const awaitingPm = (mainTasks ?? []).filter(
+    (t) => t.status === "PM_REVIEW",
+  ).length;
+  const awaitingClient = (mainTasks ?? []).filter(
+    (t) => t.status === "CLIENT_SIGNOFF",
+  ).length;
+  const todayCount = (todayTasks ?? []).length;
+  const overdue = (todayTasks ?? []).filter(
+    (t) => t.scheduledDate && t.scheduledDate < today && t.status !== "DONE",
+  ).length;
+
   return (
     <div className="animate-fade-in-up space-y-6">
-      {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-[var(--color-primary)]">Dashboard</h1>
-        <p className="mt-1 text-sm text-gray-500">Project overview and key metrics</p>
+        <h1 className="text-2xl font-bold text-[var(--color-primary)]">
+          Dashboard
+        </h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Project overview and key metrics
+        </p>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Active Projects" value="12" trend="+2 this month" accent />
-        <KpiCard label="Pending Approvals" value="5" trend="3 photos, 2 tasks" />
-        <KpiCard label="Crew Tasks Today" value="24" trend="8 completed so far" />
-        <KpiCard label="Revenue (MTD)" value="$48,250" trend="+12% vs last month" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <KpiCard
+          label="Active Projects"
+          value={String(activeProjects)}
+          href="/admin/projects"
+          accent
+        />
+        <KpiCard
+          label="Awaiting PM Review"
+          value={String(awaitingPm)}
+          href="/admin/projects"
+        />
+        <KpiCard
+          label="Awaiting Client Signoff"
+          value={String(awaitingClient)}
+          href="/admin/projects"
+        />
+        <KpiCard
+          label="Daily Tasks Today"
+          value={String(todayCount)}
+          href="/admin/projects"
+        />
+        <KpiCard label="Overdue" value={String(overdue)} href="/admin/projects" />
       </div>
 
-      {/* Quick Actions */}
       <Card>
-        <h2 className="mb-4 text-lg font-semibold text-[var(--color-primary)]">Quick Actions</h2>
-        <div className="flex flex-wrap gap-3">
-          <Button variant="primary" size="sm">+ New Project</Button>
-          <Button variant="secondary" size="sm">+ New Client</Button>
-          <Button variant="secondary" size="sm">+ Invite User</Button>
-        </div>
-      </Card>
-
-      {/* Recent Activity */}
-      <Card>
-        <h2 className="mb-4 text-lg font-semibold text-[var(--color-primary)]">Recent Activity</h2>
-        <div className="space-y-3">
-          {[
-            { verb: "completed task", entity: "Shingle tear-off — Day 2", time: "10 min ago", actor: "Mike C." },
-            { verb: "uploaded photos", entity: "Flashing installation", time: "32 min ago", actor: "Dave R." },
-            { verb: "approved photos", entity: "Underlayment inspection", time: "1 hour ago", actor: "Sarah P." },
-            { verb: "created project", entity: "Smith Residence — Roof Replacement", time: "2 hours ago", actor: "Sarah P." },
-          ].map((item, i) => (
-            <div key={i} className="flex items-start gap-3 border-b border-[var(--color-border)] pb-3 last:border-0 last:pb-0">
-              <div className="mt-0.5 h-2 w-2 rounded-full bg-[var(--color-amber)]" />
-              <div className="flex-1 text-sm">
-                <span className="font-medium text-[var(--color-primary)]">{item.actor}</span>
-                {" "}{item.verb}{" "}
-                <span className="text-gray-600">{item.entity}</span>
-              </div>
-              <span className="text-xs text-gray-400">{item.time}</span>
-            </div>
+        <h2 className="mb-4 text-lg font-semibold text-[var(--color-primary)]">
+          Recent Projects
+        </h2>
+        <div className="space-y-2">
+          {(projects ?? []).slice(0, 8).map((p) => (
+            <Link
+              key={p.id}
+              href={`/admin/projects/${p.id}`}
+              className="flex items-center justify-between border-b border-[var(--color-border)] py-2 last:border-0"
+            >
+              <span className="text-sm text-[var(--color-primary)]">
+                {p.name}
+              </span>
+              <span className="text-xs uppercase tracking-wide text-gray-400">
+                {p.status}
+              </span>
+            </Link>
           ))}
+          {!projects?.length && (
+            <p className="text-sm text-gray-400">No projects yet.</p>
+          )}
         </div>
       </Card>
     </div>
@@ -57,20 +127,25 @@ export default function AdminDashboard() {
 function KpiCard({
   label,
   value,
-  trend,
+  href,
   accent,
 }: {
   label: string;
   value: string;
-  trend: string;
+  href: string;
   accent?: boolean;
 }) {
   return (
-    <Card className="relative overflow-hidden">
-      {accent && <div className="absolute left-0 top-0 h-1 w-full bg-[var(--color-amber)]" />}
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="mt-1 text-3xl font-bold text-[var(--color-primary)]">{value}</p>
-      <p className="mt-1 text-xs text-gray-400">{trend}</p>
-    </Card>
+    <Link href={href} className="block">
+      <Card className="relative overflow-hidden transition hover:shadow-md">
+        {accent && (
+          <div className="absolute left-0 top-0 h-1 w-full bg-[var(--color-amber)]" />
+        )}
+        <p className="text-sm text-gray-500">{label}</p>
+        <p className="mt-1 text-3xl font-bold text-[var(--color-primary)]">
+          {value}
+        </p>
+      </Card>
+    </Link>
   );
 }

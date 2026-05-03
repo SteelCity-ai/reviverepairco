@@ -2,7 +2,7 @@ import { Router } from "express";
 import { db } from "../../lib/db/index.js";
 import { eq, sql } from "drizzle-orm";
 
-const router = Router();
+const router: Router = Router();
 
 // GET /api/v1/me — returns current user profile
 router.get("/", async (req, res, next) => {

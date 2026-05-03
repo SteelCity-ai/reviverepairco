@@ -1,42 +1,90 @@
+import { Client } from "@replit/object-storage";
 import { randomUUID } from "crypto";
 
-/**
- * Stub file-storage service.
- *
- * In production this would use Replit Object Storage or S3.
- * Currently logs actions and returns placeholder values.
- */
+const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+const client = new Client({ bucketId });
 
 export interface UploadResult {
   objectKey: string;
 }
 
-export async function uploadFile(
+export interface PhotoUploadCtx {
+  clientId: string;
+  projectId: string;
+  dailyTaskId: string;
+}
+
+export interface DocumentUploadCtx {
+  clientId: string;
+  projectId: string;
+}
+
+function buildPhotoKey(ctx: PhotoUploadCtx, filename: string) {
+  return `clients/${ctx.clientId}/projects/${ctx.projectId}/daily-tasks/${ctx.dailyTaskId}/${randomUUID()}-${filename}`;
+}
+
+function buildDocumentKey(ctx: DocumentUploadCtx, filename: string) {
+  return `clients/${ctx.clientId}/projects/${ctx.projectId}/documents/${randomUUID()}-${filename}`;
+}
+
+export async function uploadPhoto(
   buffer: Buffer,
   filename: string,
-  mimeType: string,
+  ctx: PhotoUploadCtx,
 ): Promise<UploadResult> {
-  const objectKey = `uploads/${randomUUID()}/${filename}`;
-
-  const bucketId = process.env.REPLIT_OBJECT_STORAGE_BUCKET_ID;
-  if (bucketId) {
-    // TODO: Integrate with Replit Object Storage SDK
-    console.log(
-      `[storage] (stub) Would upload ${filename} (${mimeType}, ${buffer.length} bytes) to bucket ${bucketId}`,
-    );
-  } else {
-    console.warn(
-      `[storage] (stub) REPLIT_OBJECT_STORAGE_BUCKET_ID not set — upload for ${filename} is NO-OP`,
-    );
+  const objectKey = buildPhotoKey(ctx, filename);
+  const result = await client.uploadFromBytes(objectKey, buffer);
+  if (!result.ok) {
+    throw new Error(`storage.uploadPhoto failed: ${result.error.message}`);
   }
-
   return { objectKey };
 }
 
-export async function getSignedUrl(
+export async function uploadDocument(
+  buffer: Buffer,
+  filename: string,
+  ctx: DocumentUploadCtx,
+): Promise<UploadResult> {
+  const objectKey = buildDocumentKey(ctx, filename);
+  const result = await client.uploadFromBytes(objectKey, buffer);
+  if (!result.ok) {
+    throw new Error(`storage.uploadDocument failed: ${result.error.message}`);
+  }
+  return { objectKey };
+}
+
+/**
+ * Download bytes for an object. Used by /photos/:id/url and
+ * /documents/:id/url style endpoints to proxy the file (the SDK does not
+ * expose presigned URLs directly).
+ */
+export async function downloadBytes(
   objectKey: string,
-  _expiresInSeconds = 3600,
-): Promise<string> {
-  console.log(`[storage] (stub) Generating signed URL for ${objectKey}`);
-  return `https://storage.stub.reviverepairco.com/${objectKey}?signature=placeholder`;
+): Promise<Buffer> {
+  const result = await client.downloadAsBytes(objectKey);
+  if (!result.ok) {
+    throw new Error(`storage.downloadBytes failed: ${result.error.message}`);
+  }
+  return Buffer.from(result.value[0]);
+}
+
+/**
+ * Returns the API path the client should hit to stream the object back.
+ * (We proxy through the API instead of exposing GCS URLs directly so we can
+ * enforce per-request authz.)
+ */
+export function buildPhotoUrl(photoId: string): string {
+  return `/api/v1/photos/${photoId}/file`;
+}
+export function buildDocumentUrl(docId: string): string {
+  return `/api/v1/documents/${docId}/file`;
+}
+
+export async function deleteObject(objectKey: string): Promise<void> {
+  const result = await client.delete(objectKey);
+  if (!result.ok) {
+    console.warn(
+      `[storage] delete failed for ${objectKey}: ${result.error.message}`,
+    );
+  }
 }

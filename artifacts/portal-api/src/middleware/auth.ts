@@ -1,52 +1,40 @@
-import type { Request, Response, NextFunction } from "express";
-import { requireAuth, type ClerkExpressRequireAuth } from "@clerk/express";
+import type { Request, RequestHandler, Response, NextFunction } from "express";
+import { requireAuth, getAuth } from "@clerk/express";
 import { db } from "../../lib/db/index.js";
 import { userProfile } from "../../lib/db/schema/portal.js";
-import { eq, isNull } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type { AuthenticatedUser } from "../types.js";
 
-// ── Clerk auth middleware ───────────────────────────────────────────────────
-
-/**
- * Verifies the Clerk session token and loads (or creates) the corresponding
- * user_profile row. Attaches the AuthenticatedUser to `req.user`.
- *
- * Routes behind this middleware can assume req.user is always set.
- */
 async function loadUserProfile(
   req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> {
   try {
-    const clerkUserId = req.auth?.userId;
+    const a = getAuth(req);
+    const clerkUserId = a.userId;
     if (!clerkUserId) {
       res.status(401).json({ error: "Unauthorized — no Clerk session" });
       return;
     }
 
-    // Extract metadata from Clerk session claims
-    const sessionClaims = req.auth?.sessionClaims as Record<string, unknown> | undefined;
+    const sessionClaims = (a.sessionClaims ?? {}) as Record<string, unknown>;
     const publicMetadata =
-      (sessionClaims?.publicMetadata as Record<string, unknown>) ?? {};
-    const clerkRole = (publicMetadata?.role as string) ?? "CREW";
+      (sessionClaims.publicMetadata as Record<string, unknown>) ?? {};
+    const clerkRole = (publicMetadata.role as string) ?? "CREW";
+    const clerkClientId =
+      (publicMetadata.clientId as string | null | undefined) ?? null;
 
-    // Look up existing profile
     let profile = await db.query.userProfile.findFirst({
       where: eq(userProfile.clerkUserId, clerkUserId),
     });
 
     if (!profile) {
-      // Auto-provision: create profile from Clerk session data
       const displayName =
-        (sessionClaims?.firstName as string) ||
-        (sessionClaims?.username as string) ||
+        (sessionClaims.firstName as string) ||
+        (sessionClaims.username as string) ||
         clerkUserId;
-      const email =
-        (sessionClaims?.email as string) ||
-        (sessionClaims?.primaryEmailAddressId
-          ? (sessionClaims as Record<string, unknown>).email as string
-          : null);
+      const email = (sessionClaims.email as string | undefined) ?? null;
 
       const [newProfile] = await db
         .insert(userProfile)
@@ -54,10 +42,10 @@ async function loadUserProfile(
           clerkUserId,
           role: clerkRole as "ADMIN" | "CREW" | "CLIENT",
           displayName: String(displayName),
-          email: email ?? null,
+          email,
+          clientId: clerkClientId,
         })
         .returning();
-
       profile = newProfile!;
       console.log(
         `[auth] Auto-provisioned user_profile for clerkUserId=${clerkUserId} role=${clerkRole}`,
@@ -72,7 +60,6 @@ async function loadUserProfile(
       email: profile.email ?? null,
       clientId: profile.clientId ?? null,
     };
-
     req.user = user;
     next();
   } catch (err) {
@@ -81,10 +68,7 @@ async function loadUserProfile(
   }
 }
 
-/** Combined Clerk auth + user-profile loading middleware. */
-export const clerkAuth = [requireAuth() as ClerkExpressRequireAuth, loadUserProfile];
-
-// ── Role guard middleware ───────────────────────────────────────────────────
+export const clerkAuth: RequestHandler[] = [requireAuth() as unknown as RequestHandler, loadUserProfile as RequestHandler];
 
 function createRoleGuard(...roles: Array<"ADMIN" | "CREW" | "CLIENT">) {
   return (req: Request, res: Response, next: NextFunction): void => {
@@ -92,26 +76,17 @@ function createRoleGuard(...roles: Array<"ADMIN" | "CREW" | "CLIENT">) {
       res.status(401).json({ error: "Unauthorized — no session" });
       return;
     }
-
     if (!roles.includes(req.user.role)) {
-      res.status(403).json({
-        error: `Forbidden — requires one of roles: ${roles.join(", ")}`,
-      });
+      res
+        .status(403)
+        .json({ error: `Forbidden — requires one of: ${roles.join(", ")}` });
       return;
     }
-
     next();
   };
 }
 
-/** Requires ADMIN role. */
 export const requireAdmin = createRoleGuard("ADMIN");
-
-/** Requires CREW role. */
 export const requireCrew = createRoleGuard("CREW");
-
-/** Requires CLIENT role. */
 export const requireClient = createRoleGuard("CLIENT");
-
-/** Requires ADMIN or CREW role. */
 export const requireStaff = createRoleGuard("ADMIN", "CREW");

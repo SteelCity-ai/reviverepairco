@@ -6,7 +6,7 @@ import { eq, ilike, isNull, and } from "drizzle-orm";
 import { validate } from "../middleware/validate.js";
 import { requireAdmin, requireStaff } from "../middleware/auth.js";
 
-const router = Router();
+const router: Router = Router();
 
 // ── Zod schemas ────────────────────────────────────────────────────────────
 
@@ -66,7 +66,7 @@ router.post(
 router.get("/:id", requireStaff, async (req, res, next) => {
   try {
     const result = await db.query.client.findFirst({
-      where: eq(client.id, req.params.id!),
+      where: eq(client.id, (req.params.id as string)),
     });
     if (!result) {
       res.status(404).json({ error: "Client not found" });
@@ -88,7 +88,7 @@ router.patch(
       const [updated] = await db
         .update(client)
         .set({ ...req.body, updatedAt: new Date() })
-        .where(eq(client.id, req.params.id!))
+        .where(eq(client.id, (req.params.id as string)))
         .returning();
 
       if (!updated) {
@@ -108,7 +108,7 @@ router.delete("/:id", requireAdmin, async (req, res, next) => {
     const result = await db
       .update(client)
       .set({ updatedAt: new Date() })
-      .where(eq(client.id, req.params.id!))
+      .where(eq(client.id, (req.params.id as string)))
       .returning();
 
     if (!result.length) {
@@ -117,7 +117,7 @@ router.delete("/:id", requireAdmin, async (req, res, next) => {
     }
     // Note: client table doesn't have archivedAt — use project pattern instead.
     // For now, we just mark updatedAt. Full soft-delete would need schema change.
-    res.json({ id: req.params.id, archived: true });
+    res.json({ id: (req.params.id as string), archived: true });
   } catch (err) {
     next(err);
   }

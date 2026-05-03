@@ -6,7 +6,7 @@ import { eq, and, gte, lte } from "drizzle-orm";
 import { validate } from "../middleware/validate.js";
 import { requireStaff } from "../middleware/auth.js";
 
-const router = Router();
+const router: Router = Router();
 
 const clockInBody = z.object({
   projectId: z.string().uuid(),
@@ -21,8 +21,8 @@ router.get("/", requireStaff, async (req, res, next) => {
     const conditions = [];
     if (userId) conditions.push(eq(timeEntry.userId, userId as string));
     if (projectId) conditions.push(eq(timeEntry.projectId, projectId as string));
-    if (from) conditions.push(gte(timeEntry.clockIn, from as string));
-    if (to) conditions.push(lte(timeEntry.clockIn, to as string));
+    if (from) conditions.push(gte(timeEntry.clockIn, new Date(from as string)));
+    if (to) conditions.push(lte(timeEntry.clockIn, new Date(to as string)));
     const entries = await db.select().from(timeEntry)
       .where(and(...conditions))
       .orderBy(timeEntry.clockIn);
@@ -50,7 +50,7 @@ router.post("/:id/clock-out", requireStaff, async (req, res, next) => {
     const { id } = req.params;
     const [entry] = await db.update(timeEntry)
       .set({ clockOut: new Date() })
-      .where(eq(timeEntry.id, id)).returning();
+      .where(eq(timeEntry.id, id as string)).returning();
     if (!entry) return res.status(404).json({ error: "Time entry not found" });
     res.json(entry);
   } catch (err) { next(err); }

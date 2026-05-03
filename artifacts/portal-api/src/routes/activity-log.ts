@@ -4,7 +4,7 @@ import { activityLog } from "../../lib/db/schema/portal.js";
 import { eq, desc } from "drizzle-orm";
 import { requireStaff } from "../middleware/auth.js";
 
-const router = Router();
+const router: Router = Router();
 
 // ── Project activity ──
 // GET /api/v1/activity/project/:projectId
