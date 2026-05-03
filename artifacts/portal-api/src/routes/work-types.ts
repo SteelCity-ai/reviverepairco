@@ -91,10 +91,10 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-// POST /api/v1/work-types — create (admin/staff)
+// POST /api/v1/work-types — admin only
 router.post(
   "/",
-  requireStaff,
+  requireAdmin,
   validate.body(createWorkTypeSchema),
   async (req, res, next) => {
     try {
@@ -136,7 +136,7 @@ router.get("/:id", async (req, res, next) => {
 // PATCH /api/v1/work-types/:id (admin/staff)
 router.patch(
   "/:id",
-  requireStaff,
+  requireAdmin,
   validate.body(updateWorkTypeSchema),
   async (req, res, next) => {
     try {

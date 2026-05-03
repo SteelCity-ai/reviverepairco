@@ -1,4 +1,5 @@
 import { Router } from "express";
+import multer from "multer";
 import { z } from "zod";
 import { db } from "../../lib/db/index.js";
 import {
@@ -6,10 +7,12 @@ import {
   mainTask,
   workType,
   project,
+  taskPhoto,
 } from "../../lib/db/schema/portal.js";
 import { eq, and, gte, lte, inArray } from "drizzle-orm";
 import { validate } from "../middleware/validate.js";
-import { requireStaff } from "../middleware/auth.js";
+import { requireAdmin, requireStaff } from "../middleware/auth.js";
+import { uploadPhoto } from "../lib/storage.js";
 import {
   recomputeMainTaskStatus,
   recomputeWorkTypeStatus,
@@ -33,7 +36,6 @@ const updateDailyTaskSchema = z.object({
   scheduledDate: z.string().nullable().optional(),
   title: z.string().min(1).max(255).optional(),
   description: z.string().optional(),
-  status: z.enum(["NOT_STARTED", "DONE"]).optional(),
   crewNotes: z.string().nullable().optional(),
   hoursLogged: z.string().nullable().optional(),
   sortOrder: z.number().int().optional(),
@@ -136,7 +138,7 @@ router.get("/", async (req, res, next) => {
 // POST /api/v1/daily-tasks — admin/crew (admin really; staff for now)
 router.post(
   "/",
-  requireStaff,
+  requireAdmin,
   validate.body(createDailyTaskSchema),
   async (req, res, next) => {
     try {
@@ -305,5 +307,64 @@ router.post("/:id/complete", async (req, res, next) => {
     next(err);
   }
 });
+
+// POST /api/v1/daily-tasks/:id/photos — assignee or admin (spec-aligned alias)
+const photoUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024 },
+});
+router.post(
+  "/:id/photos",
+  photoUpload.single("file"),
+  async (req, res, next) => {
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+      }
+      if (!req.file) {
+        res.status(400).json({ error: "No file provided" });
+        return;
+      }
+      const scope = await resolveDailyTaskScope(req.params.id as string);
+      if (!scope) {
+        res.status(404).json({ error: "Daily task not found" });
+        return;
+      }
+      const isAssignee = scope.assigneeId === req.user.userId;
+      const isAdmin = req.user.role === "ADMIN";
+      if (!isAssignee && !isAdmin) {
+        res
+          .status(403)
+          .json({ error: "Forbidden — only the assignee or admin can upload" });
+        return;
+      }
+      const { objectKey } = await uploadPhoto(
+        req.file.buffer,
+        req.file.originalname,
+        {
+          clientId: scope.clientId,
+          projectId: scope.projectId,
+          dailyTaskId: req.params.id as string,
+        },
+      );
+      const [photo] = await db
+        .insert(taskPhoto)
+        .values({
+          dailyTaskId: req.params.id as string,
+          objectKey,
+          originalFilename: req.file.originalname,
+          mimeType: req.file.mimetype,
+          sizeBytes: req.file.size,
+          uploadedByUserId: req.user.userId,
+          caption: (req.body as { caption?: string }).caption ?? null,
+        })
+        .returning();
+      res.status(201).json(photo);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
 
 export default router;

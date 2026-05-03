@@ -40,15 +40,6 @@ const updateMainTaskSchema = z.object({
   description: z.string().optional(),
   sortOrder: z.number().int().optional(),
   materials: z.array(z.unknown()).optional(),
-  status: z
-    .enum([
-      "NOT_STARTED",
-      "IN_PROGRESS",
-      "PM_REVIEW",
-      "CLIENT_SIGNOFF",
-      "COMPLETE",
-    ])
-    .optional(),
   startDate: z.string().nullable().optional(),
   endDate: z.string().nullable().optional(),
   estimatedDurationDays: z.number().int().nullable().optional(),
@@ -131,7 +122,7 @@ router.get("/", async (req, res, next) => {
 
 router.post(
   "/",
-  requireStaff,
+  requireAdmin,
   validate.body(createMainTaskSchema),
   async (req, res, next) => {
     try {
@@ -201,7 +192,7 @@ router.get("/:id", async (req, res, next) => {
 
 router.patch(
   "/:id",
-  requireStaff,
+  requireAdmin,
   validate.body(updateMainTaskSchema),
   async (req, res, next) => {
     try {
@@ -428,8 +419,12 @@ router.post(
   },
 );
 
-// GET /api/v1/main-tasks/:id/completion-document
-router.get("/:id/completion-document", async (req, res, next) => {
+// GET /api/v1/main-tasks/:id/completion-document(.pdf)
+const completionDocHandler = async (
+  req: import("express").Request,
+  res: import("express").Response,
+  next: import("express").NextFunction,
+) => {
   try {
     if (!req.user) {
       res.status(401).json({ error: "Unauthorized" });
@@ -458,6 +453,8 @@ router.get("/:id/completion-document", async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-});
+};
+router.get("/:id/completion-document", completionDocHandler);
+router.get("/:id/completion-document.pdf", completionDocHandler);
 
 export default router;
