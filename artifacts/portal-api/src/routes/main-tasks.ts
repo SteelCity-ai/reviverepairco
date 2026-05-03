@@ -9,7 +9,7 @@ import {
   taskPhoto,
   dailyTask,
 } from "../../lib/db/schema/portal.js";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { validate } from "../middleware/validate.js";
 import { requireAdmin, requireStaff } from "../middleware/auth.js";
@@ -177,9 +177,24 @@ router.get("/:id", async (req, res, next) => {
     }
 
     const scope = await resolveProjectFromMainTask((req.params.id as string));
+    if (!scope) {
+      res.status(404).json({ error: "Main task not found" });
+      return;
+    }
     if (req.user.role === "CLIENT") {
-      if (!scope || scope.clientId !== req.user.clientId) {
+      if (scope.clientId !== req.user.clientId) {
         res.status(403).json({ error: "Forbidden" });
+        return;
+      }
+    } else if (req.user.role === "CREW") {
+      const assigned = await db.query.dailyTask.findFirst({
+        where: and(
+          eq(dailyTask.mainTaskId, req.params.id as string),
+          eq(dailyTask.assignedToUserId, req.user.userId),
+        ),
+      });
+      if (!assigned) {
+        res.status(403).json({ error: "Forbidden — not assigned" });
         return;
       }
     }

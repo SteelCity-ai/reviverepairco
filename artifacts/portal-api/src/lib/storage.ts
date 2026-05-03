@@ -1,7 +1,9 @@
 import { Client } from "@replit/object-storage";
 import { randomUUID } from "crypto";
 
-const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+const bucketId =
+  process.env.REPLIT_OBJECT_STORAGE_BUCKET_ID ??
+  process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
 const client = new Client({ bucketId });
 
 export interface UploadResult {
