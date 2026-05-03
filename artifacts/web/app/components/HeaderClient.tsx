@@ -5,12 +5,15 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Brand } from "../../lib/brand";
 
+const PORTAL_URL =
+  process.env.NEXT_PUBLIC_PORTAL_URL ?? "https://portal.reviverepairco.com";
+
 const navLinks = [
-  { href: "/about", label: "About" },
-  { href: "/services", label: "Services" },
-  { href: "/blog", label: "Blog" },
-  { href: "/contact", label: "Contact" },
-  { href: "/login", label: "Client Login" },
+  { href: "/about", label: "About", external: false },
+  { href: "/services", label: "Services", external: false },
+  { href: "/blog", label: "Blog", external: false },
+  { href: "/contact", label: "Contact", external: false },
+  { href: PORTAL_URL, label: "Client Login", external: true },
 ];
 
 type HeaderClientProps = {
@@ -83,16 +86,27 @@ export default function HeaderClient({
 
         <nav aria-label="Primary" className="hidden lg:block">
           <ul className="flex items-center gap-7">
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className={`text-base font-semibold transition ${linkColor}`}
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
+            {navLinks.map((link) =>
+              link.external ? (
+                <li key={link.href}>
+                  <a
+                    href={link.href}
+                    className={`text-base font-semibold transition ${linkColor}`}
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ) : (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className={`text-base font-semibold transition ${linkColor}`}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ),
+            )}
           </ul>
         </nav>
 
@@ -157,17 +171,29 @@ export default function HeaderClient({
         >
           <nav aria-label="Mobile" className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
             <ul className="flex flex-col divide-y divide-black/5">
-              {navLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    onClick={() => setMenuOpen(false)}
-                    className="block py-3 text-base font-semibold text-[var(--color-primary)] hover:text-[var(--color-amber)]"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
+              {navLinks.map((link) =>
+                link.external ? (
+                  <li key={link.href}>
+                    <a
+                      href={link.href}
+                      onClick={() => setMenuOpen(false)}
+                      className="block py-3 text-base font-semibold text-[var(--color-primary)] hover:text-[var(--color-amber)]"
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ) : (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      onClick={() => setMenuOpen(false)}
+                      className="block py-3 text-base font-semibold text-[var(--color-primary)] hover:text-[var(--color-amber)]"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ),
+              )}
             </ul>
             <div className="mt-4 flex flex-col gap-2">
               <a
