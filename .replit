@@ -51,5 +51,4 @@ channel = "stable-25_05"
 
 [userenv.shared]
 VITE_CLERK_PUBLISHABLE_KEY = "pk_test_dmVyaWZpZWQtdGFkcG9sZS01Ny5jbGVyay5hY2NvdW50cy5kZXYk"
-INTERNAL_CRON_SECRET = "1f2a8bc22c8f6548788642d0f28fbfe7f35304b9ff67f5cb3becca39204660a2"
 NEXT_PUBLIC_API_URL = "/portal-api/api/v1"
