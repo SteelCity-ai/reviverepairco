@@ -27,6 +27,10 @@ const nextConfig: NextConfig = {
   },
   env: {
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.CLERK_PUBLISHABLE_KEY,
+    NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/portal/sign-in",
+    NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/portal/sign-up",
+    NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL: "/portal/",
+    NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL: "/portal/",
     NEXT_PUBLIC_BASE_PATH: basePath,
   },
   async redirects() {

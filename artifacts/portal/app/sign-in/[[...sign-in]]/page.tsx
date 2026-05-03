@@ -48,19 +48,9 @@ export default function SignInPage() {
             <h1 className="text-xl font-bold text-[var(--color-primary)]">Revive Portal</h1>
           </div>
           <SignIn
-            appearance={{
-              elements: {
-                card: "shadow-none border-0",
-                headerTitle: "text-[var(--color-primary)] text-xl font-bold",
-                headerSubtitle: "text-gray-500 text-sm",
-                formButtonPrimary:
-                  "bg-[var(--color-amber)] hover:bg-[var(--color-amber-light)] text-[var(--color-primary)] font-semibold rounded-full px-5 py-2.5",
-                formFieldInput:
-                  "rounded-lg border-[var(--color-border)] focus:border-[var(--color-amber)] focus:ring-[var(--color-amber)]/20",
-                footerActionLink:
-                  "text-[var(--color-amber)] hover:text-[var(--color-amber-light)]",
-              },
-            }}
+            routing="path"
+            path="/portal/sign-in"
+            signUpUrl="/portal/sign-up"
           />
         </div>
       </div>
