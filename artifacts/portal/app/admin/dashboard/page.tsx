@@ -40,10 +40,12 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
   const today = todayET();
-  const [projects, mainTasks, todayTasks] = await Promise.all([
+  const [projects, mainTasks, todayTasks, allOpenTasks] = await Promise.all([
     api<ProjectRow[]>("/projects"),
     api<MainTaskRow[]>("/main-tasks"),
     api<DailyTaskRow[]>(`/daily-tasks?date=${today}`),
+    // Open daily tasks across all dates — filter for overdue locally.
+    api<DailyTaskRow[]>(`/daily-tasks?status=TODO,IN_PROGRESS,BLOCKED`),
   ]);
 
   const activeProjects = (projects ?? []).filter(
@@ -56,7 +58,7 @@ export default async function AdminDashboard() {
     (t) => t.status === "CLIENT_SIGNOFF",
   ).length;
   const todayCount = (todayTasks ?? []).length;
-  const overdue = (todayTasks ?? []).filter(
+  const overdue = (allOpenTasks ?? []).filter(
     (t) => t.scheduledDate && t.scheduledDate < today && t.status !== "DONE",
   ).length;
 

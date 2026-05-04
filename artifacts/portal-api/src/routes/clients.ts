@@ -27,15 +27,19 @@ const updateClientSchema = createClientSchema.partial();
 router.get("/", requireAdmin, async (req, res, next) => {
   try {
     const search = req.query.search as string | undefined;
-    let where = isNull(client.id); // dummy — will be replaced
+    const includeArchived = req.query.includeArchived === "true";
+    const conditions = [] as Array<ReturnType<typeof eq>>;
+    if (!includeArchived) conditions.push(isNull(client.archivedAt));
+    if (search) conditions.push(ilike(client.companyName, `%${search}%`));
 
-    if (search) {
-      where = ilike(client.companyName, `%${search}%`);
-    }
-
-    const results = search
-      ? await db.select().from(client).where(where).orderBy(client.companyName)
-      : await db.select().from(client).orderBy(client.companyName);
+    const results =
+      conditions.length > 0
+        ? await db
+            .select()
+            .from(client)
+            .where(and(...conditions))
+            .orderBy(client.companyName)
+        : await db.select().from(client).orderBy(client.companyName);
 
     res.json(results);
   } catch (err) {
@@ -109,18 +113,17 @@ async function archiveClientHandler(
   next: Parameters<Parameters<typeof router.post>[1]>[2],
 ) {
   try {
+    const now = new Date();
     const result = await db
       .update(client)
-      .set({ updatedAt: new Date() })
+      .set({ archivedAt: now, updatedAt: now })
       .where(eq(client.id, req.params.id as string))
       .returning();
     if (!result.length) {
       res.status(404).json({ error: "Client not found" });
       return;
     }
-    // Note: client table has no archivedAt column yet; mark updatedAt for now.
-    // Schema change to add archivedAt is tracked as a follow-up.
-    res.json({ id: req.params.id as string, archived: true });
+    res.json({ id: req.params.id as string, archived: true, archivedAt: now });
   } catch (err) {
     next(err);
   }

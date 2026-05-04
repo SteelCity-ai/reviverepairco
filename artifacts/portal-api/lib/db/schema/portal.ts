@@ -127,6 +127,7 @@ export const client = pgTable("client", {
   phone: varchar("phone", { length: 50 }),
   billingAddress: jsonb("billing_address"),
   notes: text("notes"),
+  archivedAt: timestamp("archived_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
