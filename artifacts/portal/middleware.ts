@@ -15,9 +15,8 @@ const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 const isCrewRoute = createRouteMatcher(["/crew(.*)"]);
 const isClientRoute = createRouteMatcher(["/client(.*)"]);
 
-function redirectTo(req: Request, path: string, withRedirect = false) {
+function redirectTo(req: Request, path: string) {
   const url = new URL(`${BASE_PATH}${path}`, req.url);
-  if (withRedirect) url.searchParams.set("redirect_url", req.url);
   return NextResponse.redirect(url);
 }
 
@@ -26,7 +25,7 @@ export default clerkMiddleware(async (auth, req) => {
 
   const { userId, sessionClaims } = await auth();
   if (!userId) {
-    return redirectTo(req, "/sign-in", true);
+    return redirectTo(req, "/sign-in");
   }
 
   const role =

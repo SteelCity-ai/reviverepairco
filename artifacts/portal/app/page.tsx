@@ -12,9 +12,9 @@ export default async function HomePage() {
     const role =
       (sessionClaims?.publicMetadata as { role?: string } | undefined)?.role ??
       "CREW";
-    if (role === "ADMIN") redirect(`${BASE}/admin/dashboard`);
-    if (role === "CREW") redirect(`${BASE}/crew/today`);
-    redirect(`${BASE}/client/projects`);
+    if (role === "ADMIN") redirect("/admin/dashboard");
+    if (role === "CREW") redirect("/crew/today");
+    redirect("/client/projects");
   }
 
   return (

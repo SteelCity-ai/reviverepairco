@@ -7,7 +7,7 @@ const BASE = process.env.PORTAL_BASE_PATH ?? "/portal";
 
 export default async function SignInPage() {
   const { userId } = await auth();
-  if (userId) redirect(`${BASE}/`);
+  if (userId) redirect("/");
 
   return (
     <div className="flex min-h-screen">
@@ -58,6 +58,8 @@ export default async function SignInPage() {
             routing="path"
             path="/portal/sign-in"
             signUpUrl="/portal/sign-up"
+            fallbackRedirectUrl="/portal/"
+            forceRedirectUrl="/portal/"
           />
         </div>
       </div>
