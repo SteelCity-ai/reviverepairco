@@ -422,6 +422,48 @@ router.post(
         );
       }
 
+      // Sign-off confirmation email → PM + all client users of the client.
+      try {
+        const { userProfile } = await import(
+          "../../lib/db/schema/portal.js"
+        );
+        const projRow = await db.query.project.findFirst({
+          where: eq(project.id, scope.projectId),
+        });
+        const recipients = new Set<string>();
+        // Client users for this client
+        const clientUsers = await db
+          .select()
+          .from(userProfile)
+          .where(eq(userProfile.clientId, scope.clientId));
+        for (const c of clientUsers) {
+          if (c.role === "CLIENT" && c.email && !c.archivedAt) {
+            recipients.add(c.email);
+          }
+        }
+        // PM on the project
+        if (projRow?.projectManagerUserId) {
+          const pm = await db.query.userProfile.findFirst({
+            where: eq(userProfile.id, projRow.projectManagerUserId),
+          });
+          if (pm?.email && !pm.archivedAt) recipients.add(pm.email);
+        }
+        const pdfUrl = `${
+          process.env.PORTAL_PUBLIC_URL ?? "https://portal.reviverepairco.com"
+        }/api/v1/main-tasks/${task.id}/completion-document.pdf`;
+        if (recipients.size) {
+          await sendMail({
+            to: Array.from(recipients),
+            subject: `Sign-off recorded: "${task.name}"`,
+            html: `<p><strong>${req.body.signatureName}</strong> has signed off on <strong>${task.name}</strong>.</p>
+<p>The Work Completion Document is attached as a PDF link below for your records.</p>
+<p><a href="${pdfUrl}">Download completion document (PDF) →</a></p>`,
+          });
+        }
+      } catch (e) {
+        console.warn("[main-tasks] signoff confirmation email failed", e);
+      }
+
       res.json({
         id: task.id,
         status: "COMPLETE",
@@ -500,16 +542,29 @@ const completionDocHandler = async (
     }
     if (req.path.endsWith(".pdf")) {
       const PDFDocument = (await import("pdfkit")).default;
-      const mt = await db.query.mainTask.findFirst({
-        where: eq(mainTask.id, req.params.id as string),
-      });
-      const payload = (doc.payload ?? {}) as Record<string, unknown>;
-      const photos = Array.isArray(payload.photos)
-        ? (payload.photos as Array<{ caption?: string; objectKey?: string }>)
-        : [];
-      const crew = Array.isArray(payload.crew)
-        ? (payload.crew as string[])
-        : [];
+      type CompletionPayload = {
+        taskName?: string;
+        reviewedAt?: string;
+        reviewedBy?: string;
+        dailyTasks?: Array<{
+          title?: string;
+          completedAt?: string | null;
+          crewNotes?: string | null;
+          hoursLogged?: string | null;
+          photos?: Array<{
+            id?: string;
+            objectKey?: string;
+            originalFilename?: string;
+            caption?: string | null;
+          }>;
+        }>;
+      };
+      const payload = (doc.payload ?? {}) as CompletionPayload;
+      const dailyTasks = payload.dailyTasks ?? [];
+      const totalApprovedPhotos = dailyTasks.reduce(
+        (sum, dt) => sum + (dt.photos?.length ?? 0),
+        0,
+      );
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader(
         "Content-Disposition",
@@ -518,22 +573,42 @@ const completionDocHandler = async (
       const pdf = new PDFDocument({ size: "LETTER", margin: 54 });
       pdf.pipe(res);
       pdf.fontSize(20).text("Work Completion Document", { align: "left" });
-      pdf.moveDown();
-      pdf.fontSize(12).text(`Main Task: ${mt?.name ?? req.params.id}`);
-      pdf.text(`Compiled: ${doc.compiledAt?.toISOString() ?? "—"}`);
-      if (typeof payload.workPerformed === "string") {
-        pdf.moveDown().fontSize(12).text("Work Performed:");
-        pdf.fontSize(11).text(payload.workPerformed as string);
-      }
-      if (crew.length) {
-        pdf.moveDown().fontSize(12).text(`Crew: ${crew.join(", ")}`);
-      }
-      if (photos.length) {
-        pdf.moveDown().fontSize(12).text(`Approved Photos (${photos.length})`);
-        for (const p of photos) {
-          pdf
-            .fontSize(10)
-            .text(`• ${p.caption ?? p.objectKey ?? "(photo)"}`);
+      pdf.moveDown(0.5);
+      pdf.fontSize(12).text(`Main Task: ${payload.taskName ?? req.params.id}`);
+      pdf.text(
+        `Reviewed: ${
+          payload.reviewedAt
+            ? new Date(payload.reviewedAt).toLocaleString()
+            : doc.compiledAt?.toISOString() ?? "—"
+        }`,
+      );
+      if (payload.reviewedBy) pdf.text(`Reviewed by: ${payload.reviewedBy}`);
+      pdf.moveDown(0.5).text(`Approved photos: ${totalApprovedPhotos}`);
+      pdf.moveDown(1).fontSize(14).text("Work Performed", { underline: true });
+      for (const dt of dailyTasks) {
+        pdf.moveDown(0.5);
+        pdf.fontSize(12).text(`• ${dt.title ?? "(untitled)"}`);
+        if (dt.completedAt) {
+          pdf.fontSize(10).fillColor("gray").text(
+            `   Completed ${new Date(dt.completedAt).toLocaleDateString()}`,
+          );
+          pdf.fillColor("black");
+        }
+        if (dt.crewNotes) {
+          pdf.fontSize(10).text(`   Notes: ${dt.crewNotes}`);
+        }
+        if (dt.hoursLogged) {
+          pdf.fontSize(10).text(`   Hours: ${dt.hoursLogged}`);
+        }
+        if (dt.photos && dt.photos.length) {
+          pdf.fontSize(10).text(`   Approved photos (${dt.photos.length}):`);
+          for (const p of dt.photos) {
+            pdf
+              .fontSize(9)
+              .text(
+                `      - ${p.caption ?? p.originalFilename ?? p.objectKey ?? "(photo)"}`,
+              );
+          }
         }
       }
       pdf.end();
