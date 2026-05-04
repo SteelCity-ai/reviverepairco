@@ -60,6 +60,27 @@ router.post("/daily-summary", async (req, res, next) => {
       .from(userProfile)
       .where(isNull(userProfile.archivedAt));
 
+    // Build mainTaskId → { mainTaskName, projectName } once for context.
+    const mtRows = await db
+      .select({
+        id: mainTask.id,
+        name: mainTask.name,
+        projectId: workType.projectId,
+        projectName: project.name,
+      })
+      .from(mainTask)
+      .innerJoin(workType, eq(mainTask.workTypeId, workType.id))
+      .innerJoin(project, eq(workType.projectId, project.id));
+    const mtCtx = new Map(
+      mtRows.map((r) => [r.id, { mainTaskName: r.name, projectName: r.projectName, projectId: r.projectId }]),
+    );
+    function ctxLine(d: typeof dailyTask.$inferSelect): string {
+      const c = mtCtx.get(d.mainTaskId);
+      const proj = c?.projectName ? `<em>${c.projectName}</em>` : "";
+      const mt = c?.mainTaskName ? ` › ${c.mainTaskName}` : "";
+      return `<li><strong>${d.title}</strong>${proj || mt ? `<br><span style="color:#666;font-size:90%">${proj}${mt}</span>` : ""}</li>`;
+    }
+
     // Pull yesterday's completed daily tasks + today's scheduled
     const yesterdayDone = await db.query.dailyTask.findMany({
       where: and(
@@ -140,16 +161,12 @@ router.post("/daily-summary", async (req, res, next) => {
       const sections: string[] = [];
       if (personalYest.length) {
         sections.push(
-          `<h3>Yesterday</h3><ul>${personalYest
-            .map((d) => `<li>${d.title}</li>`)
-            .join("")}</ul>`,
+          `<h3>Yesterday</h3><ul>${personalYest.map(ctxLine).join("")}</ul>`,
         );
       }
       if (personalToday.length) {
         sections.push(
-          `<h3>Today</h3><ul>${personalToday
-            .map((d) => `<li>${d.title}</li>`)
-            .join("")}</ul>`,
+          `<h3>Today</h3><ul>${personalToday.map(ctxLine).join("")}</ul>`,
         );
       }
       if (u.role === "ADMIN" && pmReviewTasks.length) {

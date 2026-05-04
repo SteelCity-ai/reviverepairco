@@ -219,14 +219,35 @@ router.get("/:id/file", async (req, res, next) => {
   }
 });
 
+// Same authz as /file to avoid resource-existence enumeration.
 router.get("/:id/url", async (req, res, next) => {
   try {
+    if (!req.user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
     const doc = await db.query.projectDocument.findFirst({
       where: eq(projectDocument.id, (req.params.id as string)),
     });
     if (!doc) {
       res.status(404).json({ error: "Document not found" });
       return;
+    }
+    const proj = await loadProject(doc.projectId);
+    if (!proj) {
+      res.status(404).json({ error: "Project not found" });
+      return;
+    }
+    if (req.user.role === "CLIENT" && proj.clientId !== req.user.clientId) {
+      res.status(403).json({ error: "Forbidden" });
+      return;
+    }
+    if (req.user.role === "CREW") {
+      const allowed = await assertCrewProjectAccess(req.user.userId, proj.id);
+      if (!allowed) {
+        res.status(403).json({ error: "Forbidden" });
+        return;
+      }
     }
     res.json({ url: `/api/v1/documents/${doc.id}/file` });
   } catch (err) {

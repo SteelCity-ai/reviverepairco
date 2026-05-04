@@ -309,16 +309,31 @@ router.get("/:id/file", async (req, res, next) => {
 });
 
 // GET /api/v1/photos/:id/url — convenience: returns the proxy path.
+// Same authz as /file to avoid resource-existence enumeration.
 router.get("/:id/url", async (req, res, next) => {
   try {
-    const photo = await db.query.taskPhoto.findFirst({
-      where: eq(taskPhoto.id, (req.params.id as string)),
-    });
-    if (!photo) {
+    if (!req.user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    const scope = await resolvePhotoScope((req.params.id as string));
+    if (!scope) {
       res.status(404).json({ error: "Photo not found" });
       return;
     }
-    res.json({ url: `/api/v1/photos/${photo.id}/file` });
+    if (
+      req.user.role === "CREW" &&
+      scope.assigneeId !== req.user.userId &&
+      scope.photo.uploadedByUserId !== req.user.userId
+    ) {
+      res.status(403).json({ error: "Forbidden" });
+      return;
+    }
+    if (req.user.role === "CLIENT" && req.user.clientId !== scope.clientId) {
+      res.status(403).json({ error: "Forbidden" });
+      return;
+    }
+    res.json({ url: `/api/v1/photos/${scope.photo.id}/file` });
   } catch (err) {
     next(err);
   }
