@@ -7,8 +7,22 @@
  * components) — never call this directly without a token.
  */
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3002/api/v1";
+/**
+ * On the server we must use an absolute URL — Node's fetch cannot parse
+ * a path-only base like "/portal-api/api/v1". On the browser we keep the
+ * relative path so requests flow through the workspace path-based proxy
+ * (and through the artifact router in production).
+ */
+function resolveApiBase(): string {
+  if (typeof window === "undefined") {
+    return (
+      process.env.PORTAL_API_INTERNAL_URL ??
+      "http://localhost:3002/api/v1"
+    );
+  }
+  return process.env.NEXT_PUBLIC_API_URL ?? "/portal-api/api/v1";
+}
+const API_BASE = resolveApiBase();
 
 export interface ApiCallOptions {
   method?: string;

@@ -14,8 +14,9 @@ interface ClerkUserEvent {
   };
 }
 
+// Server-only — must be an absolute URL for Node fetch.
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3002/api/v1";
+  process.env.PORTAL_API_INTERNAL_URL ?? "http://localhost:3002/api/v1";
 const INTERNAL_SECRET = process.env.INTERNAL_CRON_SECRET;
 
 export async function POST(req: Request) {
