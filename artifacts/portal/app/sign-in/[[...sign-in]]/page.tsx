@@ -59,7 +59,6 @@ export default async function SignInPage() {
             path="/portal/sign-in"
             signUpUrl="/portal/sign-up"
             fallbackRedirectUrl="/portal/"
-            forceRedirectUrl="/portal/"
           />
         </div>
       </div>

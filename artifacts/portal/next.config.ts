@@ -31,15 +31,6 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/portal/sign-up",
     NEXT_PUBLIC_BASE_PATH: basePath,
   },
-  async redirects() {
-    return [
-      {
-        source: "/",
-        destination: "/sign-in",
-        permanent: false,
-      },
-    ];
-  },
 };
 
 export default nextConfig;
