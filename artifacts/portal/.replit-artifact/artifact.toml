@@ -1,5 +1,5 @@
 kind = "web"
-previewPath = "/portal"
+previewPath = "/portal/sign-in"
 title = "Revive Portal"
 version = "1.0.0"
 id = "artifacts/portal"
