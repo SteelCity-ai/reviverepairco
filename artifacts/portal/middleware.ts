@@ -1,4 +1,8 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import {
+  clerkClient,
+  clerkMiddleware,
+  createRouteMatcher,
+} from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const BASE_PATH = process.env.PORTAL_BASE_PATH ?? "/portal";
@@ -31,9 +35,21 @@ export default clerkMiddleware(async (auth, req) => {
     return redirectTo(req, "/sign-in");
   }
 
-  const role =
-    (sessionClaims?.publicMetadata as { role?: string } | undefined)?.role ??
-    "CREW";
+  // Try the session claim first (cheap). If absent — Clerk's default
+  // session token doesn't include public_metadata — fall back to the
+  // Backend API and read it from the user record directly.
+  let role =
+    (sessionClaims?.publicMetadata as { role?: string } | undefined)?.role;
+  if (!role) {
+    try {
+      const client = await clerkClient();
+      const user = await client.users.getUser(userId);
+      role = (user.publicMetadata as { role?: string } | undefined)?.role;
+    } catch (err) {
+      console.error("[portal-mw] failed to load user metadata", err);
+    }
+  }
+  role = role ?? "CREW";
 
   const url = new URL(req.url);
   const pathname = url.pathname.replace(BASE_PATH, "") || "/";
