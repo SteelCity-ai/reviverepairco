@@ -243,6 +243,34 @@ router.patch(
   },
 );
 
+// DELETE /api/v1/daily-tasks/:id (admin only)
+router.delete("/:id", requireAdmin, async (req, res, next) => {
+  try {
+    const existing = await db.query.dailyTask.findFirst({
+      where: eq(dailyTask.id, req.params.id as string),
+    });
+    if (!existing) {
+      res.status(404).json({ error: "Daily task not found" });
+      return;
+    }
+    await db.delete(dailyTask).where(eq(dailyTask.id, req.params.id as string));
+    await recomputeMainTaskStatus(existing.mainTaskId);
+    const mt = await db.query.mainTask.findFirst({
+      where: eq(mainTask.id, existing.mainTaskId),
+    });
+    if (mt) {
+      await recomputeWorkTypeStatus(mt.workTypeId);
+      const wt = await db.query.workType.findFirst({
+        where: eq(workType.id, mt.workTypeId),
+      });
+      if (wt) await recomputeProjectStatus(wt.projectId);
+    }
+    res.json({ id: req.params.id as string, deleted: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // POST /api/v1/daily-tasks/:id/complete — assignee or admin
 router.post("/:id/complete", async (req, res, next) => {
   try {

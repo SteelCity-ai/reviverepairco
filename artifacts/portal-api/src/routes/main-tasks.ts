@@ -434,6 +434,28 @@ router.post(
   },
 );
 
+// DELETE /api/v1/main-tasks/:id (admin only)
+router.delete("/:id", requireAdmin, async (req, res, next) => {
+  try {
+    const existing = await db.query.mainTask.findFirst({
+      where: eq(mainTask.id, req.params.id as string),
+    });
+    if (!existing) {
+      res.status(404).json({ error: "Main task not found" });
+      return;
+    }
+    await db.delete(mainTask).where(eq(mainTask.id, req.params.id as string));
+    await recomputeWorkTypeStatus(existing.workTypeId);
+    const wt = await db.query.workType.findFirst({
+      where: eq(workType.id, existing.workTypeId),
+    });
+    if (wt) await recomputeProjectStatus(wt.projectId);
+    res.json({ id: req.params.id as string, deleted: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // GET /api/v1/main-tasks/:id/completion-document(.pdf)
 const completionDocHandler = async (
   req: import("express").Request,
@@ -474,6 +496,47 @@ const completionDocHandler = async (
     });
     if (!doc) {
       res.status(404).json({ error: "Completion document not yet compiled" });
+      return;
+    }
+    if (req.path.endsWith(".pdf")) {
+      const PDFDocument = (await import("pdfkit")).default;
+      const mt = await db.query.mainTask.findFirst({
+        where: eq(mainTask.id, req.params.id as string),
+      });
+      const payload = (doc.payload ?? {}) as Record<string, unknown>;
+      const photos = Array.isArray(payload.photos)
+        ? (payload.photos as Array<{ caption?: string; objectKey?: string }>)
+        : [];
+      const crew = Array.isArray(payload.crew)
+        ? (payload.crew as string[])
+        : [];
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `inline; filename="completion-${(req.params.id as string).slice(0, 8)}.pdf"`,
+      );
+      const pdf = new PDFDocument({ size: "LETTER", margin: 54 });
+      pdf.pipe(res);
+      pdf.fontSize(20).text("Work Completion Document", { align: "left" });
+      pdf.moveDown();
+      pdf.fontSize(12).text(`Main Task: ${mt?.name ?? req.params.id}`);
+      pdf.text(`Compiled: ${doc.compiledAt?.toISOString() ?? "—"}`);
+      if (typeof payload.workPerformed === "string") {
+        pdf.moveDown().fontSize(12).text("Work Performed:");
+        pdf.fontSize(11).text(payload.workPerformed as string);
+      }
+      if (crew.length) {
+        pdf.moveDown().fontSize(12).text(`Crew: ${crew.join(", ")}`);
+      }
+      if (photos.length) {
+        pdf.moveDown().fontSize(12).text(`Approved Photos (${photos.length})`);
+        for (const p of photos) {
+          pdf
+            .fontSize(10)
+            .text(`• ${p.caption ?? p.objectKey ?? "(photo)"}`);
+        }
+      }
+      pdf.end();
       return;
     }
     res.json(doc);

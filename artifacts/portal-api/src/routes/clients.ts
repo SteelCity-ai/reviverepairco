@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { db } from "../../lib/db/index.js";
-import { client } from "../../lib/db/schema/portal.js";
+import { client, userProfile } from "../../lib/db/schema/portal.js";
 import { eq, ilike, isNull, and } from "drizzle-orm";
 import { validate } from "../middleware/validate.js";
 import { requireAdmin } from "../middleware/auth.js";
@@ -125,6 +125,25 @@ async function archiveClientHandler(
     next(err);
   }
 }
+
+// GET /api/v1/clients/:id/users — list user_profile rows tied to client (admin only)
+router.get("/:id/users", requireAdmin, async (req, res, next) => {
+  try {
+    const rows = await db
+      .select()
+      .from(userProfile)
+      .where(
+        and(
+          eq(userProfile.clientId, req.params.id as string),
+          isNull(userProfile.archivedAt),
+        ),
+      )
+      .orderBy(userProfile.displayName);
+    res.json(rows);
+  } catch (err) {
+    next(err);
+  }
+});
 
 router.post("/:id/archive", requireAdmin, archiveClientHandler);
 // Back-compat: keep DELETE during the transition; same admin guard + behavior.
