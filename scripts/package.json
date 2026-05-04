@@ -6,6 +6,7 @@
   "scripts": {
     "hello": "tsx ./src/hello.ts",
     "sync-to-github": "tsx ./src/sync-to-github.ts",
+    "daily-summary": "tsx ./src/daily-summary.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {

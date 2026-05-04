@@ -94,16 +94,48 @@ router.post("/daily-summary", async (req, res, next) => {
       .innerJoin(project, eq(workType.projectId, project.id))
       .where(eq(mainTask.status, "CLIENT_SIGNOFF"));
 
+    // Build a map projectId → clientId for CLIENT-scope filtering.
+    const allProjects = await db.select({ id: project.id, clientId: project.clientId }).from(project);
+    const projectClient = new Map(allProjects.map((p) => [p.id, p.clientId]));
+
+    // Build a map mainTaskId → projectId via workType.
+    const allMainTasks = await db
+      .select({ id: mainTask.id, projectId: workType.projectId })
+      .from(mainTask)
+      .innerJoin(workType, eq(mainTask.workTypeId, workType.id));
+    const mainTaskProject = new Map(allMainTasks.map((r) => [r.id, r.projectId]));
+
+    function projectIdOf(d: typeof dailyTask.$inferSelect): string | undefined {
+      return mainTaskProject.get(d.mainTaskId);
+    }
+    function clientIdOf(d: typeof dailyTask.$inferSelect): string | null | undefined {
+      const pid = projectIdOf(d);
+      return pid ? projectClient.get(pid) : undefined;
+    }
+
     let sent = 0;
     for (const u of users) {
       if (!u.email) continue;
 
-      const personalToday = todayScheduled.filter(
-        (d) => d.assignedToUserId === u.id,
-      );
-      const personalYest = yesterdayDoneFiltered.filter(
-        (d) => d.completedByUserId === u.id || d.assignedToUserId === u.id,
-      );
+      // Role-aware scoping:
+      // - ADMIN: all tasks (full visibility for office staff)
+      // - CLIENT: tasks belonging to their client's projects
+      // - CREW: only their own assignments
+      let personalToday: typeof todayScheduled;
+      let personalYest: typeof yesterdayDoneFiltered;
+      if (u.role === "ADMIN") {
+        personalToday = todayScheduled;
+        personalYest = yesterdayDoneFiltered;
+      } else if (u.role === "CLIENT" && u.clientId) {
+        personalToday = todayScheduled.filter((d) => clientIdOf(d) === u.clientId);
+        personalYest = yesterdayDoneFiltered.filter((d) => clientIdOf(d) === u.clientId);
+      } else {
+        // CREW (or CLIENT without clientId — degrade to assignment scope)
+        personalToday = todayScheduled.filter((d) => d.assignedToUserId === u.id);
+        personalYest = yesterdayDoneFiltered.filter(
+          (d) => d.completedByUserId === u.id || d.assignedToUserId === u.id,
+        );
+      }
 
       const sections: string[] = [];
       if (personalYest.length) {

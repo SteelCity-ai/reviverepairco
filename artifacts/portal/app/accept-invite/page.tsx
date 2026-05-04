@@ -1,22 +1,29 @@
-import { Card } from "@/components/ui/Card";
+import { SignUp } from "@clerk/nextjs";
 
-export default function AcceptInvitePage() {
+const BASE = process.env.NEXT_PUBLIC_PORTAL_BASE_PATH ?? "/portal";
+
+/**
+ * Clerk invitation acceptance flow.
+ * The invitation email links here with `?__clerk_ticket=<ticket>`; passing
+ * `signUpForceRedirectUrl` + ticket-aware <SignUp/> completes the handshake.
+ */
+export default function AcceptInvitePage({
+  searchParams,
+}: {
+  searchParams: { __clerk_ticket?: string; redirect_url?: string };
+}) {
+  const ticket = searchParams?.__clerk_ticket;
+  const after = BASE === "" ? "/" : `${BASE}/`;
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--color-surface)] px-4">
-      <Card className="max-w-md w-full text-center animate-fade-in-up">
-        <div className="mb-4 flex justify-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--color-amber)] text-lg font-bold text-[var(--color-primary)]">
-            R
-          </div>
-        </div>
-        <h1 className="text-xl font-bold text-[var(--color-primary)]">Accept Invitation</h1>
-        <p className="mt-2 text-sm text-gray-500">
-          Check your email for the invitation link from Clerk. Click the link in your email to complete setup.
-        </p>
-        <p className="mt-6 text-xs text-gray-400">
-          Having trouble? Contact your project manager.
-        </p>
-      </Card>
+    <div className="flex min-h-screen items-center justify-center bg-[var(--color-bg)] px-4">
+      <SignUp
+        path={`${BASE}/accept-invite`}
+        routing="path"
+        signInUrl={`${BASE}/sign-in`}
+        afterSignUpUrl={after}
+        afterSignInUrl={after}
+        initialValues={ticket ? { } : undefined}
+      />
     </div>
   );
 }

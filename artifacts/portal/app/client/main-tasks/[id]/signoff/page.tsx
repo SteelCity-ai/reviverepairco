@@ -84,6 +84,8 @@ export default function ClientSignoffPage({
     return <div className="px-4 py-5 text-sm text-gray-500">Loading…</div>;
 
   if (done) {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "";
+    const pdfUrl = `${apiBase}/main-tasks/${id}/completion-document.pdf`;
     return (
       <div className="mx-auto max-w-xl px-4 py-10 text-center">
         <Check className="mx-auto h-12 w-12 text-green-500" />
@@ -93,12 +95,22 @@ export default function ClientSignoffPage({
         <p className="mt-2 text-gray-600">
           Your sign-off for <strong>{task.name}</strong> has been recorded.
         </p>
-        <Link
-          href="/client/projects"
-          className="mt-6 inline-block rounded-full bg-[var(--color-amber)] px-4 py-2 font-semibold text-[var(--color-primary)]"
-        >
-          Back to projects
-        </Link>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <a
+            href={pdfUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block rounded-full border border-[var(--color-border)] bg-white px-4 py-2 font-semibold text-[var(--color-primary)]"
+          >
+            Download completion document (PDF)
+          </a>
+          <Link
+            href="/client/projects"
+            className="inline-block rounded-full bg-[var(--color-amber)] px-4 py-2 font-semibold text-[var(--color-primary)]"
+          >
+            Back to projects
+          </Link>
+        </div>
       </div>
     );
   }
