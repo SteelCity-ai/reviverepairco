@@ -4,7 +4,7 @@ import { db } from "../../lib/db/index.js";
 import { client } from "../../lib/db/schema/portal.js";
 import { eq, ilike, isNull, and } from "drizzle-orm";
 import { validate } from "../middleware/validate.js";
-import { requireAdmin, requireStaff } from "../middleware/auth.js";
+import { requireAdmin } from "../middleware/auth.js";
 
 const router: Router = Router();
 
@@ -23,8 +23,8 @@ const updateClientSchema = createClientSchema.partial();
 
 // ── Routes ─────────────────────────────────────────────────────────────────
 
-// GET /api/v1/clients — list clients (admin/staff only)
-router.get("/", requireStaff, async (req, res, next) => {
+// GET /api/v1/clients — list clients (admin only)
+router.get("/", requireAdmin, async (req, res, next) => {
   try {
     const search = req.query.search as string | undefined;
     let where = isNull(client.id); // dummy — will be replaced
@@ -62,8 +62,8 @@ router.post(
   },
 );
 
-// GET /api/v1/clients/:id — single client (admin/staff only)
-router.get("/:id", requireStaff, async (req, res, next) => {
+// GET /api/v1/clients/:id — single client (admin only)
+router.get("/:id", requireAdmin, async (req, res, next) => {
   try {
     const result = await db.query.client.findFirst({
       where: eq(client.id, (req.params.id as string)),
@@ -102,25 +102,32 @@ router.patch(
   },
 );
 
-// DELETE /api/v1/clients/:id — soft delete (admin only)
-router.delete("/:id", requireAdmin, async (req, res, next) => {
+// POST /api/v1/clients/:id/archive — soft archive (admin only)
+async function archiveClientHandler(
+  req: Parameters<Parameters<typeof router.post>[1]>[0],
+  res: Parameters<Parameters<typeof router.post>[1]>[1],
+  next: Parameters<Parameters<typeof router.post>[1]>[2],
+) {
   try {
     const result = await db
       .update(client)
       .set({ updatedAt: new Date() })
-      .where(eq(client.id, (req.params.id as string)))
+      .where(eq(client.id, req.params.id as string))
       .returning();
-
     if (!result.length) {
       res.status(404).json({ error: "Client not found" });
       return;
     }
-    // Note: client table doesn't have archivedAt — use project pattern instead.
-    // For now, we just mark updatedAt. Full soft-delete would need schema change.
-    res.json({ id: (req.params.id as string), archived: true });
+    // Note: client table has no archivedAt column yet; mark updatedAt for now.
+    // Schema change to add archivedAt is tracked as a follow-up.
+    res.json({ id: req.params.id as string, archived: true });
   } catch (err) {
     next(err);
   }
-});
+}
+
+router.post("/:id/archive", requireAdmin, archiveClientHandler);
+// Back-compat: keep DELETE during the transition; same admin guard + behavior.
+router.delete("/:id", requireAdmin, archiveClientHandler);
 
 export default router;

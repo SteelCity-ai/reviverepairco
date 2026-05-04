@@ -172,6 +172,38 @@ export async function userCanAccessProject(
   return rows.length > 0;
 }
 
+/**
+ * Resolve the projectId an entity belongs to, walking the hierarchy.
+ * entityType: PROJECT | WORK_TYPE | MAIN_TASK | DAILY_TASK
+ * Returns null if the entity isn't found.
+ */
+export async function resolveProjectIdForEntity(
+  entityType: "PROJECT" | "WORK_TYPE" | "MAIN_TASK" | "DAILY_TASK",
+  entityId: string,
+): Promise<string | null> {
+  if (entityType === "PROJECT") {
+    const p = await db.query.project.findFirst({ where: eq(project.id, entityId) });
+    return p?.id ?? null;
+  }
+  if (entityType === "WORK_TYPE") {
+    const wt = await db.query.workType.findFirst({ where: eq(workType.id, entityId) });
+    return wt?.projectId ?? null;
+  }
+  if (entityType === "MAIN_TASK") {
+    const mt = await db.query.mainTask.findFirst({ where: eq(mainTask.id, entityId) });
+    if (!mt) return null;
+    const wt = await db.query.workType.findFirst({ where: eq(workType.id, mt.workTypeId) });
+    return wt?.projectId ?? null;
+  }
+  // DAILY_TASK
+  const dt = await db.query.dailyTask.findFirst({ where: eq(dailyTask.id, entityId) });
+  if (!dt) return null;
+  const mt = await db.query.mainTask.findFirst({ where: eq(mainTask.id, dt.mainTaskId) });
+  if (!mt) return null;
+  const wt = await db.query.workType.findFirst({ where: eq(workType.id, mt.workTypeId) });
+  return wt?.projectId ?? null;
+}
+
 export async function logActivity(
   projectId: string,
   actorUserId: string,
