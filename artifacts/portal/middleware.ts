@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 const BASE_PATH = process.env.PORTAL_BASE_PATH ?? "/portal";
 
 const isPublicRoute = createRouteMatcher([
-  "/",
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/accept-invite(.*)",
@@ -24,13 +23,26 @@ export default clerkMiddleware(async (auth, req) => {
   if (isPublicRoute(req)) return;
 
   const { userId, sessionClaims } = await auth();
+
   if (!userId) {
+    const url = new URL(req.url);
+    const pathname = url.pathname.replace(BASE_PATH, "") || "/";
+    if (pathname === "/") return;
     return redirectTo(req, "/sign-in");
   }
 
   const role =
     (sessionClaims?.publicMetadata as { role?: string } | undefined)?.role ??
     "CREW";
+
+  const url = new URL(req.url);
+  const pathname = url.pathname.replace(BASE_PATH, "") || "/";
+
+  if (pathname === "/") {
+    if (role === "ADMIN") return redirectTo(req, "/admin/dashboard");
+    if (role === "CREW") return redirectTo(req, "/crew/today");
+    return redirectTo(req, "/client/projects");
+  }
 
   if (isAdminRoute(req) && role !== "ADMIN") {
     return redirectTo(req, "/");
@@ -45,6 +57,7 @@ export default clerkMiddleware(async (auth, req) => {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|images/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/",
+    "/((?!_next/static|_next/image|favicon.ico|images/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).+)",
   ],
 };

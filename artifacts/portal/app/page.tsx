@@ -1,22 +1,7 @@
-import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
 import Image from "next/image";
 import Link from "next/link";
 
-const BASE = process.env.PORTAL_BASE_PATH ?? "/portal";
-
-export default async function HomePage() {
-  const { userId, sessionClaims } = await auth();
-
-  if (userId) {
-    const role =
-      (sessionClaims?.publicMetadata as { role?: string } | undefined)?.role ??
-      "CREW";
-    if (role === "ADMIN") redirect("/admin/dashboard");
-    if (role === "CREW") redirect("/crew/today");
-    redirect("/client/projects");
-  }
-
+export default function HomePage() {
   return (
     <div className="flex min-h-screen flex-col bg-[var(--color-primary)] text-white">
       <header className="px-6 py-5">
