@@ -4,7 +4,8 @@ import { db } from "../../lib/db/index.js";
 import { changeOrder } from "../../lib/db/schema/portal.js";
 import { eq, and } from "drizzle-orm";
 import { validate } from "../middleware/validate.js";
-import { requireStaff } from "../middleware/auth.js";
+import { requireAdmin, requireStaff } from "../middleware/auth.js";
+import { userCanAccessProject } from "../lib/db-helpers.js";
 
 const router: Router = Router();
 
@@ -22,78 +23,165 @@ const rejectBody = z.object({
   rejectionReason: z.string().optional(),
 });
 
-// ── List ──
+async function loadCO(id: string) {
+  return db.query.changeOrder.findFirst({
+    where: eq(changeOrder.id, id),
+  });
+}
+
+// ── List (scoped) ──
 router.get("/", requireStaff, async (req, res, next) => {
   try {
+    if (!req.user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
     const { projectId } = req.query;
-    const conditions = [];
-    if (projectId) conditions.push(eq(changeOrder.projectId, projectId as string));
-    const items = await db.select().from(changeOrder)
-      .where(and(...conditions))
+    if (!projectId) {
+      if (req.user.role !== "ADMIN") {
+        res.status(400).json({ error: "projectId query parameter is required" });
+        return;
+      }
+      const items = await db.select().from(changeOrder).orderBy(changeOrder.createdAt);
+      res.json(items);
+      return;
+    }
+    const allowed = await userCanAccessProject(req.user, projectId as string);
+    if (!allowed) {
+      res.status(403).json({ error: "Forbidden" });
+      return;
+    }
+    const items = await db
+      .select()
+      .from(changeOrder)
+      .where(eq(changeOrder.projectId, projectId as string))
       .orderBy(changeOrder.createdAt);
     res.json(items);
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
 
-// ── Create ──
-router.post("/", requireStaff, validate.body(createCOBody), async (req, res, next) => {
+// ── Create (admin only — costs/scope changes) ──
+router.post("/", requireAdmin, validate.body(createCOBody), async (req, res, next) => {
   try {
-    const [co] = await db.insert(changeOrder).values({
-      ...req.body,
-      status: "DRAFT",
-      createdByUserId: req.user!.userId,
-    }).returning();
+    const [co] = await db
+      .insert(changeOrder)
+      .values({
+        ...req.body,
+        status: "DRAFT",
+        createdByUserId: req.user!.userId,
+      })
+      .returning();
     res.status(201).json(co);
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
 
-// ── Update ──
-router.patch("/:id", requireStaff, async (req, res, next) => {
+// ── Update (admin only) ──
+router.patch("/:id", requireAdmin, async (req, res, next) => {
   try {
-    const [updated] = await db.update(changeOrder).set(req.body)
-      .where(eq(changeOrder.id, (req.params.id as string))).returning();
-    if (!updated) return res.status(404).json({ error: "Change order not found" });
+    const existing = await loadCO(req.params.id as string);
+    if (!existing) {
+      res.status(404).json({ error: "Change order not found" });
+      return;
+    }
+    const [updated] = await db
+      .update(changeOrder)
+      .set(req.body)
+      .where(eq(changeOrder.id, req.params.id as string))
+      .returning();
     res.json(updated);
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
 
-// ── Send (DRAFT → SENT) ──
-router.post("/:id/send", requireStaff, async (req, res, next) => {
+// ── Send (admin; DRAFT → SENT) ──
+router.post("/:id/send", requireAdmin, async (req, res, next) => {
   try {
-    const [co] = await db.update(changeOrder)
+    const [co] = await db
+      .update(changeOrder)
       .set({ status: "SENT" })
-      .where(eq(changeOrder.id, (req.params.id as string))).returning();
-    if (!co) return res.status(404).json({ error: "Change order not found" });
+      .where(eq(changeOrder.id, req.params.id as string))
+      .returning();
+    if (!co) {
+      res.status(404).json({ error: "Change order not found" });
+      return;
+    }
     res.json(co);
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
 
-// ── Client approve (SENT → APPROVED) ──
-router.post("/:id/approve", requireStaff, async (req, res, next) => {
+// ── Client approve (CLIENT user of project's client; SENT → APPROVED) ──
+router.post("/:id/approve", async (req, res, next) => {
   try {
-    const [co] = await db.update(changeOrder)
+    if (!req.user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    const co = await loadCO(req.params.id as string);
+    if (!co) {
+      res.status(404).json({ error: "Change order not found" });
+      return;
+    }
+    if (req.user.role !== "ADMIN" && req.user.role !== "CLIENT") {
+      res.status(403).json({ error: "Forbidden" });
+      return;
+    }
+    const allowed = await userCanAccessProject(req.user, co.projectId);
+    if (!allowed) {
+      res.status(403).json({ error: "Forbidden" });
+      return;
+    }
+    const [updated] = await db
+      .update(changeOrder)
       .set({
         status: "APPROVED",
         clientApprovedAt: new Date(),
-        clientApprovedByUserId: req.user!.userId,
+        clientApprovedByUserId: req.user.userId,
       })
-      .where(eq(changeOrder.id, (req.params.id as string))).returning();
-    if (!co) return res.status(404).json({ error: "Change order not found" });
-    res.json(co);
-  } catch (err) { next(err); }
+      .where(eq(changeOrder.id, req.params.id as string))
+      .returning();
+    res.json(updated);
+  } catch (err) {
+    next(err);
+  }
 });
 
-// ── Client reject (SENT → REJECTED) ──
-router.post("/:id/reject", requireStaff, validate.body(rejectBody), async (req, res, next) => {
+// ── Client reject (CLIENT user of project's client; SENT → REJECTED) ──
+router.post("/:id/reject", validate.body(rejectBody), async (req, res, next) => {
   try {
-    const [co] = await db.update(changeOrder)
+    if (!req.user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    const co = await loadCO(req.params.id as string);
+    if (!co) {
+      res.status(404).json({ error: "Change order not found" });
+      return;
+    }
+    if (req.user.role !== "ADMIN" && req.user.role !== "CLIENT") {
+      res.status(403).json({ error: "Forbidden" });
+      return;
+    }
+    const allowed = await userCanAccessProject(req.user, co.projectId);
+    if (!allowed) {
+      res.status(403).json({ error: "Forbidden" });
+      return;
+    }
+    const [updated] = await db
+      .update(changeOrder)
       .set({ status: "REJECTED" })
-      .where(eq(changeOrder.id, (req.params.id as string))).returning();
-    if (!co) return res.status(404).json({ error: "Change order not found" });
-    // Note: rejectionReason from body is validated but the schema has no
-    // dedicated rejection_reason column. Consider adding one or logging meta.
-    res.json(co);
-  } catch (err) { next(err); }
+      .where(eq(changeOrder.id, req.params.id as string))
+      .returning();
+    res.json(updated);
+  } catch (err) {
+    next(err);
+  }
 });
 
 export default router;

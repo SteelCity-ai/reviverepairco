@@ -5,7 +5,7 @@ import { workType, project, mainTask, dailyTask } from "../../lib/db/schema/port
 import { eq, and } from "drizzle-orm";
 import { validate } from "../middleware/validate.js";
 import { requireAdmin, requireStaff } from "../middleware/auth.js";
-import { recomputeProjectStatus } from "../lib/db-helpers.js";
+import { recomputeProjectStatus, userCanAccessProject } from "../lib/db-helpers.js";
 
 const router: Router = Router();
 
@@ -118,6 +118,10 @@ router.post(
 // GET /api/v1/work-types/:id
 router.get("/:id", async (req, res, next) => {
   try {
+    if (!req.user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
     const result = await db.query.workType.findFirst({
       where: eq(workType.id, (req.params.id as string)),
       with: { mainTasks: { orderBy: (mt, { asc }) => [asc(mt.sortOrder)] } },
@@ -125,6 +129,11 @@ router.get("/:id", async (req, res, next) => {
 
     if (!result) {
       res.status(404).json({ error: "Work type not found" });
+      return;
+    }
+    const allowed = await userCanAccessProject(req.user, result.projectId);
+    if (!allowed) {
+      res.status(403).json({ error: "Forbidden" });
       return;
     }
     res.json(result);

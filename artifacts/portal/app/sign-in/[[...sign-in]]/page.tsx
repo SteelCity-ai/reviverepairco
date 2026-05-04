@@ -56,9 +56,9 @@ export default async function SignInPage() {
           </div>
           <SignIn
             routing="path"
-            path="/portal/sign-in"
-            signUpUrl="/portal/sign-up"
-            fallbackRedirectUrl="/portal/"
+            path={`${BASE}/sign-in`}
+            signUpUrl={`${BASE}/sign-up`}
+            fallbackRedirectUrl={`${BASE}/`}
           />
         </div>
       </div>

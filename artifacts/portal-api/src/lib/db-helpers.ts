@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db } from "../../lib/db/index.js";
 import {
   mainTask,
@@ -138,6 +138,38 @@ export async function recomputeProjectStatus(projectId: string): Promise<void> {
       updatedAt: new Date(),
     })
     .where(eq(project.id, projectId));
+}
+
+/**
+ * Returns true if the given user has access to the given project.
+ * - ADMIN: always true
+ * - CLIENT: only if project.clientId === user.clientId
+ * - CREW: only if user has at least one daily_task assigned within the project
+ */
+export async function userCanAccessProject(
+  user: { userId: string; role: "ADMIN" | "CREW" | "CLIENT"; clientId: string | null },
+  projectId: string,
+): Promise<boolean> {
+  if (user.role === "ADMIN") return true;
+  const proj = await db.query.project.findFirst({
+    where: eq(project.id, projectId),
+  });
+  if (!proj) return false;
+  if (user.role === "CLIENT") return proj.clientId === user.clientId;
+  // CREW
+  const rows = await db
+    .select({ id: dailyTask.id })
+    .from(dailyTask)
+    .innerJoin(mainTask, eq(dailyTask.mainTaskId, mainTask.id))
+    .innerJoin(workType, eq(mainTask.workTypeId, workType.id))
+    .where(
+      and(
+        eq(workType.projectId, projectId),
+        eq(dailyTask.assignedToUserId, user.userId),
+      ),
+    )
+    .limit(1);
+  return rows.length > 0;
 }
 
 export async function logActivity(

@@ -457,6 +457,18 @@ const completionDocHandler = async (
       res.status(403).json({ error: "Forbidden" });
       return;
     }
+    if (req.user.role === "CREW") {
+      const assigned = await db.query.dailyTask.findFirst({
+        where: and(
+          eq(dailyTask.mainTaskId, req.params.id as string),
+          eq(dailyTask.assignedToUserId, req.user.userId),
+        ),
+      });
+      if (!assigned) {
+        res.status(403).json({ error: "Forbidden — not assigned" });
+        return;
+      }
+    }
     const doc = await db.query.completionDocument.findFirst({
       where: eq(completionDocument.mainTaskId, (req.params.id as string)),
     });

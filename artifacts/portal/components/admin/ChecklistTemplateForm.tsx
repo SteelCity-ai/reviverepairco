@@ -15,11 +15,12 @@ interface NewItem {
 interface ChecklistTemplateFormProps {
   onSubmit: (data: { name: string; items: ChecklistTemplateItem[] }) => void;
   onCancel: () => void;
+  submitting?: boolean;
 }
 
 // ── Component ──────────────────────────────────────────────────────────────
 
-export default function ChecklistTemplateForm({ onSubmit, onCancel }: ChecklistTemplateFormProps) {
+export default function ChecklistTemplateForm({ onSubmit, onCancel, submitting }: ChecklistTemplateFormProps) {
   const [name, setName] = useState("");
   const [items, setItems] = useState<NewItem[]>([{ label: "", required: true }]);
 
@@ -112,10 +113,10 @@ export default function ChecklistTemplateForm({ onSubmit, onCancel }: ChecklistT
         </Button>
         <Button
           onClick={handleSubmit}
-          disabled={!name.trim() || items.every((i) => !i.label.trim())}
+          disabled={submitting || !name.trim() || items.every((i) => !i.label.trim())}
           className="rounded-full bg-[var(--color-amber)] text-[var(--color-primary)] hover:bg-amber-500 disabled:opacity-50"
         >
-          Create Template
+          {submitting ? "Creating…" : "Create Template"}
         </Button>
       </div>
     </div>
