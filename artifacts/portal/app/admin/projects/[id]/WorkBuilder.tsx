@@ -21,6 +21,14 @@ interface Props {
   crew: UserProfile[];
 }
 
+type EditTarget =
+  | { kind: "wt"; id: string }
+  | { kind: "mt"; id: string }
+  | { kind: "dt"; id: string }
+  | null;
+
+const WT_STATUSES = ["NOT_STARTED", "IN_PROGRESS", "COMPLETE"] as const;
+
 export default function WorkBuilder({ projectId, workTypes, crew }: Props) {
   const { api } = useApi();
   const router = useRouter();
@@ -29,6 +37,7 @@ export default function WorkBuilder({ projectId, workTypes, crew }: Props) {
   const [showWtForm, setShowWtForm] = useState(false);
   const [openMtFor, setOpenMtFor] = useState<string | null>(null);
   const [openDtFor, setOpenDtFor] = useState<string | null>(null);
+  const [editing, setEditing] = useState<EditTarget>(null);
 
   const crewOptions = useMemo(
     () =>
@@ -37,6 +46,10 @@ export default function WorkBuilder({ projectId, workTypes, crew }: Props) {
         .map((u) => ({ value: u.id, label: u.displayName ?? u.email ?? u.id })),
     [crew],
   );
+
+  function isEditing(kind: "wt" | "mt" | "dt", id: string): boolean {
+    return editing?.kind === kind && editing.id === id;
+  }
 
   async function run<T>(key: string, fn: () => Promise<T>) {
     setBusy(key);
@@ -51,6 +64,7 @@ export default function WorkBuilder({ projectId, workTypes, crew }: Props) {
     }
   }
 
+  // ── CREATE ──────────────────────────────────────────────────────────
   async function addWorkType(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
@@ -73,7 +87,7 @@ export default function WorkBuilder({ projectId, workTypes, crew }: Props) {
     e.preventDefault();
     const form = e.currentTarget;
     const fd = new FormData(form);
-    await run(`mt-${workTypeId}`, async () => {
+    await run(`mt-add-${workTypeId}`, async () => {
       await api("/main-tasks", {
         method: "POST",
         body: {
@@ -94,7 +108,7 @@ export default function WorkBuilder({ projectId, workTypes, crew }: Props) {
     const form = e.currentTarget;
     const fd = new FormData(form);
     const assignee = String(fd.get("assignedToUserId") ?? "");
-    await run(`dt-${mainTaskId}`, async () => {
+    await run(`dt-add-${mainTaskId}`, async () => {
       await api("/daily-tasks", {
         method: "POST",
         body: {
@@ -109,6 +123,73 @@ export default function WorkBuilder({ projectId, workTypes, crew }: Props) {
     });
   }
 
+  // ── UPDATE ──────────────────────────────────────────────────────────
+  async function saveWorkType(wt: WorkType, e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    await run(`wt-save-${wt.id}`, async () => {
+      await api(`/work-types/${wt.id}`, {
+        method: "PATCH",
+        body: {
+          name: String(fd.get("name") ?? "").trim(),
+          description: String(fd.get("description") ?? "").trim() || undefined,
+          status: String(fd.get("status") ?? "") as
+            | "NOT_STARTED"
+            | "IN_PROGRESS"
+            | "COMPLETE",
+        },
+      });
+      setEditing(null);
+    });
+  }
+
+  async function saveMainTask(mt: MainTask, e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    await run(`mt-save-${mt.id}`, async () => {
+      await api(`/main-tasks/${mt.id}`, {
+        method: "PATCH",
+        body: {
+          name: String(fd.get("name") ?? "").trim(),
+          description: String(fd.get("description") ?? "").trim() || undefined,
+          startDate: String(fd.get("startDate") ?? "") || null,
+          endDate: String(fd.get("endDate") ?? "") || null,
+        },
+      });
+      setEditing(null);
+    });
+  }
+
+  async function saveDailyTask(dt: DailyTask, e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const assignee = String(fd.get("assignedToUserId") ?? "");
+    await run(`dt-save-${dt.id}`, async () => {
+      await api(`/daily-tasks/${dt.id}`, {
+        method: "PATCH",
+        body: {
+          title: String(fd.get("title") ?? "").trim(),
+          scheduledDate: String(fd.get("scheduledDate") ?? "") || null,
+          assignedToUserId: assignee || null,
+        },
+      });
+      setEditing(null);
+    });
+  }
+
+  // ── DELETE ──────────────────────────────────────────────────────────
+  async function deleteEntity(
+    path: "work-types" | "main-tasks" | "daily-tasks",
+    id: string,
+    confirmMsg: string,
+  ) {
+    if (!confirm(confirmMsg)) return;
+    await run(`del-${path}-${id}`, async () => {
+      await api(`/${path}/${id}`, { method: "DELETE" });
+    });
+  }
+
+  // ── RENDER ──────────────────────────────────────────────────────────
   return (
     <div className="space-y-4">
       {error && (
@@ -125,19 +206,68 @@ export default function WorkBuilder({ projectId, workTypes, crew }: Props) {
 
       {workTypes.map((wt) => (
         <Card key={wt.id} className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="font-semibold text-[var(--color-primary)]">
-                {wt.name}
-              </span>
-              <StatusBadge status={wt.status} />
+          {isEditing("wt", wt.id) ? (
+            <form onSubmit={(e) => saveWorkType(wt, e)} className="space-y-2">
+              <Input name="name" defaultValue={wt.name} required />
+              <Input name="description" defaultValue={wt.description ?? ""} />
+              <select
+                name="status"
+                defaultValue={wt.status}
+                className="rounded-lg border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-primary)]"
+              >
+                {WT_STATUSES.map((s) => (
+                  <option key={s} value={s}>
+                    {s.replace("_", " ")}
+                  </option>
+                ))}
+              </select>
+              <div className="flex gap-2">
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={busy === `wt-save-${wt.id}`}
+                >
+                  {busy === `wt-save-${wt.id}` ? "Saving…" : "Save"}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => setEditing(null)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="font-semibold text-[var(--color-primary)]">
+                  {wt.name}
+                </span>
+                <StatusBadge status={wt.status} />
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-gray-400">
+                  {wt.mainTasks.length} main task
+                  {wt.mainTasks.length !== 1 ? "s" : ""}
+                </span>
+                <RowActions
+                  onEdit={() => setEditing({ kind: "wt", id: wt.id })}
+                  onDelete={() =>
+                    deleteEntity(
+                      "work-types",
+                      wt.id,
+                      `Delete work type "${wt.name}" and all its tasks? This cannot be undone.`,
+                    )
+                  }
+                  busy={busy === `del-work-types-${wt.id}`}
+                />
+              </div>
             </div>
-            <span className="text-xs text-gray-400">
-              {wt.mainTasks.length} main task
-              {wt.mainTasks.length !== 1 ? "s" : ""}
-            </span>
-          </div>
-          {wt.description && (
+          )}
+
+          {!isEditing("wt", wt.id) && wt.description && (
             <p className="text-sm text-gray-500">{wt.description}</p>
           )}
 
@@ -148,41 +278,163 @@ export default function WorkBuilder({ projectId, workTypes, crew }: Props) {
                   key={mt.id}
                   className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-[var(--color-primary)]">
-                        {mt.name}
-                      </span>
-                      <StatusBadge status={mt.status} />
+                  {isEditing("mt", mt.id) ? (
+                    <form
+                      onSubmit={(e) => saveMainTask(mt, e)}
+                      className="space-y-2"
+                    >
+                      <Input name="name" defaultValue={mt.name} required />
+                      <Input
+                        name="description"
+                        defaultValue={mt.description ?? ""}
+                        placeholder="Description"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          name="startDate"
+                          type="date"
+                          defaultValue={mt.startDate ?? ""}
+                          aria-label="Start date"
+                        />
+                        <Input
+                          name="endDate"
+                          type="date"
+                          defaultValue={mt.endDate ?? ""}
+                          aria-label="End date"
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          type="submit"
+                          size="sm"
+                          disabled={busy === `mt-save-${mt.id}`}
+                        >
+                          {busy === `mt-save-${mt.id}` ? "Saving…" : "Save"}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => setEditing(null)}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </form>
+                  ) : (
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-[var(--color-primary)]">
+                          {mt.name}
+                        </span>
+                        <StatusBadge status={mt.status} />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-gray-400">
+                          {mt.dailyTasks.length} daily step
+                          {mt.dailyTasks.length !== 1 ? "s" : ""}
+                        </span>
+                        <RowActions
+                          onEdit={() => setEditing({ kind: "mt", id: mt.id })}
+                          onDelete={() =>
+                            deleteEntity(
+                              "main-tasks",
+                              mt.id,
+                              `Delete main task "${mt.name}" and all its daily steps?`,
+                            )
+                          }
+                          busy={busy === `del-main-tasks-${mt.id}`}
+                        />
+                      </div>
                     </div>
-                    <span className="text-xs text-gray-400">
-                      {mt.dailyTasks.length} daily step
-                      {mt.dailyTasks.length !== 1 ? "s" : ""}
-                    </span>
-                  </div>
+                  )}
 
                   {mt.dailyTasks.length > 0 && (
                     <ul className="mt-2 space-y-1 text-xs text-gray-600">
                       {mt.dailyTasks.map((dt) => (
                         <li
                           key={dt.id}
-                          className="flex items-center justify-between rounded bg-white px-2 py-1"
+                          className="rounded bg-white px-2 py-1"
                         >
-                          <span>
-                            {dt.status === "DONE" ? "✅ " : "◻️ "}
-                            {dt.title}
-                            {dt.scheduledDate && (
-                              <span className="ml-2 text-gray-400">
-                                {dt.scheduledDate}
+                          {isEditing("dt", dt.id) ? (
+                            <form
+                              onSubmit={(e) => saveDailyTask(dt, e)}
+                              className="space-y-2 py-2"
+                            >
+                              <Input name="title" defaultValue={dt.title} required />
+                              <div className="grid grid-cols-2 gap-2">
+                                <Input
+                                  name="scheduledDate"
+                                  type="date"
+                                  defaultValue={dt.scheduledDate ?? ""}
+                                  aria-label="Scheduled date"
+                                />
+                                <select
+                                  name="assignedToUserId"
+                                  defaultValue={dt.assignedToUserId ?? ""}
+                                  className="rounded-lg border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-primary)]"
+                                >
+                                  <option value="">Unassigned</option>
+                                  {crewOptions.map((o) => (
+                                    <option key={o.value} value={o.value}>
+                                      {o.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  type="submit"
+                                  size="sm"
+                                  disabled={busy === `dt-save-${dt.id}`}
+                                >
+                                  {busy === `dt-save-${dt.id}` ? "Saving…" : "Save"}
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="secondary"
+                                  onClick={() => setEditing(null)}
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </form>
+                          ) : (
+                            <div className="flex items-center justify-between gap-2">
+                              <span>
+                                {dt.status === "DONE" ? "✅ " : "◻️ "}
+                                {dt.title}
+                                {dt.scheduledDate && (
+                                  <span className="ml-2 text-gray-400">
+                                    {dt.scheduledDate}
+                                  </span>
+                                )}
                               </span>
-                            )}
-                          </span>
-                          {dt.assignedToUserId && (
-                            <span className="text-gray-400">
-                              {crew.find(
-                                (u) => u.id === dt.assignedToUserId,
-                              )?.displayName ?? "—"}
-                            </span>
+                              <div className="flex items-center gap-2">
+                                {dt.assignedToUserId && (
+                                  <span className="text-gray-400">
+                                    {crew.find(
+                                      (u) => u.id === dt.assignedToUserId,
+                                    )?.displayName ?? "—"}
+                                  </span>
+                                )}
+                                <RowActions
+                                  small
+                                  onEdit={() =>
+                                    setEditing({ kind: "dt", id: dt.id })
+                                  }
+                                  onDelete={() =>
+                                    deleteEntity(
+                                      "daily-tasks",
+                                      dt.id,
+                                      `Delete daily step "${dt.title}"?`,
+                                    )
+                                  }
+                                  busy={busy === `del-daily-tasks-${dt.id}`}
+                                />
+                              </div>
+                            </div>
                           )}
                         </li>
                       ))}
@@ -222,9 +474,9 @@ export default function WorkBuilder({ projectId, workTypes, crew }: Props) {
                         <Button
                           type="submit"
                           size="sm"
-                          disabled={busy === `dt-${mt.id}`}
+                          disabled={busy === `dt-add-${mt.id}`}
                         >
-                          {busy === `dt-${mt.id}` ? "Adding…" : "Add step"}
+                          {busy === `dt-add-${mt.id}` ? "Adding…" : "Add step"}
                         </Button>
                         <Button
                           type="button"
@@ -265,9 +517,9 @@ export default function WorkBuilder({ projectId, workTypes, crew }: Props) {
                 <Button
                   type="submit"
                   size="sm"
-                  disabled={busy === `mt-${wt.id}`}
+                  disabled={busy === `mt-add-${wt.id}`}
                 >
-                  {busy === `mt-${wt.id}` ? "Adding…" : "Add task"}
+                  {busy === `mt-add-${wt.id}` ? "Adding…" : "Add task"}
                 </Button>
                 <Button
                   type="button"
@@ -317,6 +569,41 @@ export default function WorkBuilder({ projectId, workTypes, crew }: Props) {
       ) : (
         <Button onClick={() => setShowWtForm(true)}>+ Add work type</Button>
       )}
+    </div>
+  );
+}
+
+function RowActions({
+  onEdit,
+  onDelete,
+  busy,
+  small,
+}: {
+  onEdit: () => void;
+  onDelete: () => void;
+  busy: boolean;
+  small?: boolean;
+}) {
+  const cls = small
+    ? "px-2 py-0.5 text-[11px]"
+    : "px-2.5 py-1 text-xs";
+  return (
+    <div className="flex items-center gap-1">
+      <button
+        type="button"
+        onClick={onEdit}
+        className={`${cls} rounded font-medium text-[var(--color-primary)] hover:bg-[var(--color-surface)]`}
+      >
+        Edit
+      </button>
+      <button
+        type="button"
+        onClick={onDelete}
+        disabled={busy}
+        className={`${cls} rounded font-medium text-red-600 hover:bg-red-50 disabled:opacity-50`}
+      >
+        {busy ? "…" : "Delete"}
+      </button>
     </div>
   );
 }
