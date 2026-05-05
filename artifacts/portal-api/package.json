@@ -20,6 +20,7 @@
     "helmet": "^8.1.0",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.10",
+    "openai": "^6.36.0",
     "pdfkit": "^0.18.0",
     "postgres": "^3.4.7",
     "svix": "^1.92.2",

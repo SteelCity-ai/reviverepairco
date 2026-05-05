@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { StatusBadge } from "@/components/ui/Badge";
+import AISuggestDailyTasks from "../../AISuggestDailyTasks";
 
 interface UserProfile {
   id: string;
@@ -221,15 +222,21 @@ export default function AdminMainTaskPage({
       {/* Daily task checklist */}
       <Card className="mb-4">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <h2 className="font-semibold text-[var(--color-primary)]">
               Daily Steps {total > 0 && <span className="ml-1 text-sm font-normal text-gray-400">({total})</span>}
             </h2>
-            {!showAddForm && (
-              <Button size="sm" onClick={() => setShowAddForm(true)}>
-                + Add Step
-              </Button>
-            )}
+            <div className="flex items-center gap-3">
+              {!showAddForm && (
+                <Button size="sm" onClick={() => setShowAddForm(true)}>
+                  + Add Step
+                </Button>
+              )}
+            </div>
+          </div>
+          {/* AI suggestion panel — sits below the header, above checklist */}
+          <div className="mt-3">
+            <AISuggestDailyTasks mainTaskId={mainTaskId} onAdded={refresh} />
           </div>
         </CardHeader>
         <CardContent className="pt-0">

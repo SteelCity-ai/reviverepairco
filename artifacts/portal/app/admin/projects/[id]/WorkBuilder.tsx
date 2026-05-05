@@ -7,6 +7,7 @@ import { ChevronRight } from "lucide-react";
 import { Button, Card, Input, StatusBadge } from "@/components/ui";
 import { useApi } from "@/lib/api-browser";
 import type { WorkType, MainTask, DailyTask } from "@/lib/db";
+import AISuggestMainTasks from "./AISuggestMainTasks";
 
 type WorkTypeFull = WorkType & {
   mainTasks: (MainTask & { dailyTasks: DailyTask[] })[];
@@ -357,13 +358,20 @@ export default function WorkBuilder({ projectId, workTypes, crew }: Props) {
               </div>
             </form>
           ) : (
-            <button
-              type="button"
-              onClick={() => setOpenMtFor(wt.id)}
-              className="text-sm font-medium text-[var(--color-amber)] hover:underline"
-            >
-              + Add main task
-            </button>
+            <div className="flex flex-wrap items-center gap-4">
+              <button
+                type="button"
+                onClick={() => setOpenMtFor(wt.id)}
+                className="text-sm font-medium text-[var(--color-amber)] hover:underline"
+              >
+                + Add main task
+              </button>
+              <AISuggestMainTasks
+                workTypeId={wt.id}
+                projectId={projectId}
+                onAdded={() => router.refresh()}
+              />
+            </div>
           )}
         </Card>
       ))}
