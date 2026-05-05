@@ -40,6 +40,12 @@ const stats = [
   { label: "Average response time", value: "< 2 hrs" },
 ];
 
+const heroLogos = [
+  "/images/revive-logo-v3.png",
+  "/images/revive-logo-v3.png",
+  "/images/revive-logo-v3.png",
+];
+
 export default function AboutPage() {
   return (
     <div className="flex flex-col bg-white">
@@ -54,32 +60,53 @@ export default function AboutPage() {
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-primary)] via-[var(--color-primary)]/85 to-transparent" />
         </div>
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[var(--color-amber)]">
-            About Revive
-          </p>
-          <h1 className="mt-4 max-w-3xl text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
-            Central Pennsylvania&apos;s repair and renovation specialists.
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/80">
-            Revive Repair Specialists is a locally owned contractor serving Harrisburg,
-            Hershey, Mechanicsburg, Carlisle, Lancaster, and the surrounding communities.
-            We handle roofing, general contracting, renovations, and demolition — all with
-            the same focus on clear communication and craftsmanship.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href="/contact"
-              className="inline-flex items-center justify-center rounded-full bg-[var(--color-amber)] px-6 py-3 text-sm font-semibold text-[var(--color-primary)] transition hover:bg-[#ebb13a]"
-            >
-              Request a free estimate
-            </Link>
-            <a
-              href="tel:+17175001434"
-              className="inline-flex items-center justify-center rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-            >
-              (717) 500-1434
-            </a>
+        <div className="relative mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[var(--color-amber)]">
+              About Revive
+            </p>
+            <h1 className="mt-4 max-w-3xl text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
+              Central Pennsylvania&apos;s repair and renovation specialists.
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/80">
+              Revive Repair Specialists is a locally owned contractor serving Harrisburg,
+              Hershey, Mechanicsburg, Carlisle, Lancaster, and the surrounding communities.
+              We handle roofing, general contracting, renovations, and demolition — all with
+              the same focus on clear communication and craftsmanship.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/contact"
+                className="inline-flex items-center justify-center rounded-full bg-[var(--color-amber)] px-6 py-3 text-sm font-semibold text-[var(--color-primary)] transition hover:bg-[#ebb13a]"
+              >
+                Request a free estimate
+              </Link>
+              <a
+                href="tel:+17175001434"
+                className="inline-flex items-center justify-center rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+              >
+                (717) 500-1434
+              </a>
+            </div>
+          </div>
+
+          <div className="relative flex items-center justify-center rounded-[2rem] border border-white/10 bg-black/10 p-6 shadow-2xl backdrop-blur-sm">
+            <div className="grid grid-cols-3 gap-4 opacity-90">
+              {heroLogos.map((src, index) => (
+                <div
+                  key={src + index}
+                  className="flex h-28 w-28 items-center justify-center rounded-2xl bg-white/5 p-4 ring-1 ring-white/10"
+                >
+                  <Image
+                    src={src}
+                    alt="Revive Repair Specialists logo"
+                    width={96}
+                    height={96}
+                    className="h-auto w-auto object-contain brightness-0 invert"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
