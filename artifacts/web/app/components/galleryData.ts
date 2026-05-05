@@ -13,7 +13,7 @@ export const roofingProjects: Project[] = [
   {
     src: "/images/gallery/02-rooftop-portrait.webp",
     alt: "Revive team member harnessed in on a steep shingle roof",
-    caption: "Tied off on a steep shingle replacement",
+    caption: "Early 19th century Yankee Gutter restoration",
   },
   {
     src: "/images/gallery/03-shingle-install.webp",
