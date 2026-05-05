@@ -18,7 +18,13 @@ function createValidator(
         path: e.path.join("."),
         message: e.message,
       }));
-      res.status(400).json({ error: "Validation failed", details: errors });
+      const summary = errors
+        .map((e) => (e.path ? `${e.path}: ${e.message}` : e.message))
+        .join("; ");
+      res.status(400).json({
+        error: `Validation failed — ${summary}`,
+        details: errors,
+      });
     }
   };
 }

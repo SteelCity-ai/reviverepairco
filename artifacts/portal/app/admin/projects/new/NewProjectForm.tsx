@@ -42,7 +42,9 @@ export default function NewProjectForm({
           name: name.trim(),
           clientId,
           projectManagerUserId: projectManagerUserId || undefined,
-          siteAddress: siteAddress.trim() || undefined,
+          siteAddress: siteAddress.trim()
+            ? { line1: siteAddress.trim() }
+            : undefined,
           startDate: startDate || undefined,
           targetEndDate: targetEndDate || undefined,
         },
