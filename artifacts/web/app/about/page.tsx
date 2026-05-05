@@ -34,8 +34,8 @@ const values = [
 ];
 
 const stats = [
-  { label: "Years serving Central PA", value: "10+" },
-  { label: "Projects completed", value: "500+" },
+  { label: "Years serving Central PA", value: "25+" },
+  { label: "Projects across Central & Eastern PA", value: "Multiple" },
   { label: "5-star homeowner reviews", value: "100+" },
   { label: "Average response time", value: "< 2 hrs" },
 ];
