@@ -17,6 +17,7 @@ import type {
 } from "@/lib/db";
 import ProjectTabs from "./ProjectTabs";
 import WorkBuilder from "./WorkBuilder";
+import ApprovalsPanel from "./ApprovalsPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -161,32 +162,15 @@ export default async function AdminProjectDetailPage({
         )}
 
         {activeTab === "approvals" && (
-          <div className="space-y-8">
-            <div>
-              <h2 className="mb-4 text-lg font-semibold text-[var(--color-primary)]">
-                Photos Pending PM Review ({pendingPhotoCount})
-              </h2>
-              {pendingPhotoCount === 0 ? (
-                <p className="text-sm text-gray-400">No photos pending review.</p>
-              ) : (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {(photos ?? [])
-                    .filter((p) => p.pmStatus === "PENDING")
-                    .map((photo) => (
-                      <Card key={photo.id}>
-                        <p className="truncate text-sm font-medium text-[var(--color-primary)]">
-                          {photo.originalFilename || photo.objectKey}
-                        </p>
-                        {photo.caption && (
-                          <p className="mt-1 text-xs italic text-gray-500">&quot;{photo.caption}&quot;</p>
-                        )}
-                        <p className="mt-1 text-xs text-gray-400">{formatDate(photo.createdAt)}</p>
-                      </Card>
-                    ))}
-                </div>
-              )}
-            </div>
-          </div>
+          <ApprovalsPanel
+            projectId={project.id}
+            pendingPhotos={(photos ?? []).filter(
+              (p) => p.pmStatus === "PENDING",
+            )}
+            mainTasksInReview={allMainTasks.filter(
+              (mt) => mt.status === "PM_REVIEW",
+            )}
+          />
         )}
 
         {activeTab === "documents" && (

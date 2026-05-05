@@ -198,6 +198,10 @@ router.get("/:id", async (req, res, next) => {
 });
 
 // PATCH /api/v1/daily-tasks/:id — admin/crew (assignee)
+// CREW assignees may only update `crewNotes` and `hoursLogged`. All planning
+// fields (assignment, scheduling, title, description, sortOrder) are ADMIN-only.
+const CREW_ALLOWED_PATCH_FIELDS = new Set(["crewNotes", "hoursLogged"]);
+
 router.patch(
   "/:id",
   validate.body(updateDailyTaskSchema),
@@ -224,9 +228,23 @@ router.patch(
         return;
       }
 
+      let patch: Record<string, unknown> = { ...req.body };
+      if (req.user.role === "CREW") {
+        const disallowed = Object.keys(patch).filter(
+          (k) => !CREW_ALLOWED_PATCH_FIELDS.has(k),
+        );
+        if (disallowed.length > 0) {
+          res.status(403).json({
+            error: `Forbidden — crew may only update: ${[...CREW_ALLOWED_PATCH_FIELDS].join(", ")}`,
+            disallowedFields: disallowed,
+          });
+          return;
+        }
+      }
+
       const [updated] = await db
         .update(dailyTask)
-        .set({ ...req.body, updatedAt: new Date() })
+        .set({ ...patch, updatedAt: new Date() })
         .where(eq(dailyTask.id, (req.params.id as string)))
         .returning();
 

@@ -10,7 +10,8 @@ import {
 } from "../../lib/db/schema/portal.js";
 import { eq, desc, and } from "drizzle-orm";
 import { requireAdmin } from "../middleware/auth.js";
-import { uploadPhoto, downloadBytes } from "../lib/storage.js";
+import { uploadPhoto, downloadBytes, deleteObject } from "../lib/storage.js";
+import { recomputeMainTaskStatus, logActivity } from "../lib/db-helpers.js";
 
 const router: Router = Router();
 const upload = multer({
@@ -269,6 +270,58 @@ router.post("/:id/reject", requireAdmin, async (req, res, next) => {
       return;
     }
     res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /api/v1/photos/:id — uploader or ADMIN
+router.delete("/:id", async (req, res, next) => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    const scope = await resolvePhotoScope(req.params.id as string);
+    if (!scope) {
+      res.status(404).json({ error: "Photo not found" });
+      return;
+    }
+    const isUploader = scope.photo.uploadedByUserId === req.user.userId;
+    const isAdmin = req.user.role === "ADMIN";
+    if (!isUploader && !isAdmin) {
+      res
+        .status(403)
+        .json({ error: "Forbidden — only the uploader or an admin can delete" });
+      return;
+    }
+
+    await db.delete(taskPhoto).where(eq(taskPhoto.id, scope.photo.id));
+
+    try {
+      await deleteObject(scope.photo.objectKey);
+    } catch (e) {
+      console.warn(
+        `[photos] Object-storage delete failed for ${scope.photo.objectKey}:`,
+        e,
+      );
+    }
+
+    const dt = await db.query.dailyTask.findFirst({
+      where: eq(dailyTask.id, scope.photo.dailyTaskId),
+    });
+    if (dt) await recomputeMainTaskStatus(dt.mainTaskId);
+
+    await logActivity(
+      scope.projectId,
+      req.user.userId,
+      "photo_deleted",
+      "TASK_PHOTO",
+      scope.photo.id,
+      { filename: scope.photo.originalFilename ?? null },
+    );
+
+    res.json({ id: scope.photo.id, deleted: true });
   } catch (err) {
     next(err);
   }
