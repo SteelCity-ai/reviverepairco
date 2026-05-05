@@ -16,6 +16,7 @@ import type {
   UserProfile,
 } from "@/lib/db";
 import ProjectTabs from "./ProjectTabs";
+import WorkBuilder from "./WorkBuilder";
 
 export const dynamic = "force-dynamic";
 
@@ -39,12 +40,13 @@ export default async function AdminProjectDetailPage({
   const { tab } = await searchParams;
   const activeTab = tab ?? "overview";
 
-  const [project, photos, activity] = await Promise.all([
+  const [project, photos, activity, users] = await Promise.all([
     api<ProjectFull>(`/projects/${id}`),
     api<TaskPhoto[]>(`/photos?projectId=${id}`).catch(() => [] as TaskPhoto[]),
     api<ActivityLog[]>(`/projects/${id}/activity`).catch(
       () => [] as ActivityLog[],
     ),
+    api<UserProfile[]>(`/users`).catch(() => [] as UserProfile[]),
   ]);
 
   if (!project) notFound();
@@ -122,48 +124,11 @@ export default async function AdminProjectDetailPage({
         )}
 
         {activeTab === "work" && (
-          <div className="space-y-4">
-            {project.workTypes.length === 0 ? (
-              <Card className="py-8 text-center text-sm text-gray-400">No work types yet.</Card>
-            ) : (
-              project.workTypes.map((wt) => (
-                <Card key={wt.id}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="font-semibold text-[var(--color-primary)]">{wt.name}</span>
-                      <StatusBadge status={wt.status} />
-                    </div>
-                    <span className="text-xs text-gray-400">
-                      {wt.mainTasks.length} main task{wt.mainTasks.length !== 1 ? "s" : ""}
-                    </span>
-                  </div>
-                  {wt.description && (
-                    <p className="mt-2 text-sm text-gray-500">{wt.description}</p>
-                  )}
-                  {wt.mainTasks.length > 0 && (
-                    <div className="mt-4 space-y-2 border-t border-[var(--color-border)] pt-4">
-                      {wt.mainTasks.map((mt) => (
-                        <div
-                          key={mt.id}
-                          className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-[var(--color-primary)]">{mt.name}</span>
-                              <StatusBadge status={mt.status} />
-                            </div>
-                            <span className="text-xs text-gray-400">
-                              {mt.dailyTasks.length} daily task{mt.dailyTasks.length !== 1 ? "s" : ""}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </Card>
-              ))
-            )}
-          </div>
+          <WorkBuilder
+            projectId={project.id}
+            workTypes={project.workTypes}
+            crew={users ?? []}
+          />
         )}
 
         {activeTab === "schedule" && (
