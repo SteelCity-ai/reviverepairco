@@ -10,9 +10,23 @@ function isBrandValue(v: string | undefined | null): v is Brand {
   return v === "roofing" || v === "repair-co";
 }
 
+const PORTAL_HOSTS = new Set([
+  "portal.reviverepairco.com",
+  "www.portal.reviverepairco.com",
+]);
+const PORTAL_REDIRECT_BASE = "https://reviverepairco.com/portal";
+
 export function middleware(request: NextRequest) {
   const hostHeader =
     request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? "";
+
+  const bareHost = hostHeader.split(":")[0].toLowerCase();
+  if (PORTAL_HOSTS.has(bareHost)) {
+    const { pathname, search } = request.nextUrl;
+    const target = `${PORTAL_REDIRECT_BASE}${pathname === "/" ? "/" : pathname}${search}`;
+    return NextResponse.redirect(target, 308);
+  }
+
   const hostBrand = brandFromHostname(hostHeader);
   const preview = isPreviewHost(hostHeader);
 
