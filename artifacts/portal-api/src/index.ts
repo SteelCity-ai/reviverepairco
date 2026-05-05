@@ -29,12 +29,24 @@ const PORT = parseInt(process.env.PORT ?? "3002", 10);
 
 // ── Global middleware ──────────────────────────────────────────────────────
 
+const allowedOrigins = [
+  "https://portal.reviverepairco.com",
+  "https://reviverepairco.com",
+  "http://localhost:3001",
+  // Replit dev domains
+  /\.replit\.dev$/,
+  /\.repl\.co$/,
+];
+
 app.use(
   cors({
-    origin: [
-      "https://portal.reviverepairco.com",
-      "http://localhost:3001",
-    ],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true); // server-to-server / curl
+      const allowed = allowedOrigins.some((o) =>
+        typeof o === "string" ? o === origin : o.test(origin),
+      );
+      callback(allowed ? null : new Error("CORS blocked"), allowed);
+    },
     credentials: true,
   }),
 );

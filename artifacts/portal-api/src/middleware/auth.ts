@@ -1,5 +1,5 @@
 import type { Request, RequestHandler, Response, NextFunction } from "express";
-import { requireAuth, getAuth } from "@clerk/express";
+import { clerkMiddleware, getAuth } from "@clerk/express";
 import { db } from "../../lib/db/index.js";
 import { userProfile } from "../../lib/db/schema/portal.js";
 import { eq } from "drizzle-orm";
@@ -13,6 +13,7 @@ async function loadUserProfile(
   try {
     const a = getAuth(req);
     const clerkUserId = a.userId;
+
     if (!clerkUserId) {
       res.status(401).json({ error: "Unauthorized — no Clerk session" });
       return;
@@ -68,7 +69,10 @@ async function loadUserProfile(
   }
 }
 
-export const clerkAuth: RequestHandler[] = [requireAuth() as unknown as RequestHandler, loadUserProfile as RequestHandler];
+export const clerkAuth: RequestHandler[] = [
+  clerkMiddleware() as unknown as RequestHandler,
+  loadUserProfile as RequestHandler,
+];
 
 function createRoleGuard(...roles: Array<"ADMIN" | "CREW" | "CLIENT">) {
   return (req: Request, res: Response, next: NextFunction): void => {
