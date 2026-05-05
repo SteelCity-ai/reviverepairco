@@ -28,6 +28,29 @@ const updateUserSchema = z.object({
   phone: z.string().max(50).nullable().optional(),
 });
 
+// GET /api/v1/users/directory — minimal user list for any authenticated user
+// Returns only id + displayName so crew can look up assignee names.
+router.get("/directory", async (req, res, next) => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    const all = await db
+      .select({
+        id: userProfile.id,
+        displayName: userProfile.displayName,
+        role: userProfile.role,
+      })
+      .from(userProfile)
+      .where(isNull(userProfile.archivedAt))
+      .orderBy(userProfile.displayName);
+    res.json(all);
+  } catch (err) {
+    next(err);
+  }
+});
+
 // GET /api/v1/users — list (admin only)
 router.get("/", requireAdmin, async (req, res, next) => {
   try {

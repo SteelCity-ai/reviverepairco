@@ -1,7 +1,7 @@
-import { Clock, MapPin } from "lucide-react";
+import { Clock, MapPin, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/lib/api-server";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { Card, CardContent } from "@/components/ui/Card";
 import { StatusBadge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -51,19 +51,23 @@ export default async function CrewTodayPage() {
   const today = todayET();
   const user = await currentUser();
   const tasks = (await api<DailyTaskRow[]>(`/daily-tasks?date=${today}`)) ?? [];
-  const mainTaskMap = new Map<string, string>();
+  const mainTaskMap = new Map<string, MainTaskRow>();
   if (tasks.length) {
-    const ids = Array.from(new Set(tasks.map((t) => t.mainTaskId)));
     const mts = (await api<MainTaskRow[]>(`/main-tasks`)) ?? [];
-    for (const m of mts) mainTaskMap.set(m.id, m.name);
+    for (const m of mts) mainTaskMap.set(m.id, m);
   }
 
-  const grouped = tasks.reduce<Record<string, DailyTaskRow[]>>((acc, t) => {
-    const label = mainTaskMap.get(t.mainTaskId) ?? "Tasks";
-    if (!acc[label]) acc[label] = [];
-    acc[label].push(t);
-    return acc;
-  }, {});
+  // Group by mainTaskId so we can show one "View full checklist" link per group
+  const grouped = tasks.reduce<Record<string, { mainTask: MainTaskRow | null; items: DailyTaskRow[] }>>(
+    (acc, t) => {
+      const mt = mainTaskMap.get(t.mainTaskId) ?? null;
+      const key = t.mainTaskId;
+      if (!acc[key]) acc[key] = { mainTask: mt, items: [] };
+      acc[key]!.items.push(t);
+      return acc;
+    },
+    {},
+  );
 
   const name = user?.firstName ?? user?.username ?? "there";
 
@@ -84,12 +88,21 @@ export default async function CrewTodayPage() {
         />
       ) : (
         <div className="space-y-6">
-          {Object.entries(grouped).map(([groupName, items]) => (
-            <section key={groupName}>
-              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-400">
-                <MapPin className="h-3.5 w-3.5" />
-                {groupName}
-              </h2>
+          {Object.entries(grouped).map(([mainTaskId, { mainTask, items }]) => (
+            <section key={mainTaskId}>
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-400">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {mainTask?.name ?? "Tasks"}
+                </h2>
+                <Link
+                  href={`/crew/main-task/${mainTaskId}`}
+                  className="flex items-center gap-0.5 text-xs font-medium text-[var(--color-amber)] hover:underline"
+                >
+                  Full checklist
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
               <div className="space-y-3">
                 {items.map((t) => (
                   <Link

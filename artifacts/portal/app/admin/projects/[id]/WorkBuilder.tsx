@@ -1,15 +1,12 @@
 "use client";
 
 import { useMemo, useState, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ChevronRight } from "lucide-react";
 import { Button, Card, Input, StatusBadge } from "@/components/ui";
 import { useApi } from "@/lib/api-browser";
-import type {
-  WorkType,
-  MainTask,
-  DailyTask,
-  UserProfile,
-} from "@/lib/db";
+import type { WorkType, MainTask, DailyTask } from "@/lib/db";
 
 type WorkTypeFull = WorkType & {
   mainTasks: (MainTask & { dailyTasks: DailyTask[] })[];
@@ -18,13 +15,12 @@ type WorkTypeFull = WorkType & {
 interface Props {
   projectId: string;
   workTypes: WorkTypeFull[];
-  crew: UserProfile[];
+  crew: { id: string; displayName: string | null; email: string | null; role: string }[];
 }
 
 type EditTarget =
   | { kind: "wt"; id: string }
   | { kind: "mt"; id: string }
-  | { kind: "dt"; id: string }
   | null;
 
 const WT_STATUSES = ["NOT_STARTED", "IN_PROGRESS", "COMPLETE"] as const;
@@ -36,18 +32,9 @@ export default function WorkBuilder({ projectId, workTypes, crew }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [showWtForm, setShowWtForm] = useState(false);
   const [openMtFor, setOpenMtFor] = useState<string | null>(null);
-  const [openDtFor, setOpenDtFor] = useState<string | null>(null);
   const [editing, setEditing] = useState<EditTarget>(null);
 
-  const crewOptions = useMemo(
-    () =>
-      crew
-        .filter((u) => u.role === "CREW" || u.role === "ADMIN")
-        .map((u) => ({ value: u.id, label: u.displayName ?? u.email ?? u.id })),
-    [crew],
-  );
-
-  function isEditing(kind: "wt" | "mt" | "dt", id: string): boolean {
+  function isEditing(kind: "wt" | "mt", id: string): boolean {
     return editing?.kind === kind && editing.id === id;
   }
 
@@ -103,26 +90,6 @@ export default function WorkBuilder({ projectId, workTypes, crew }: Props) {
     });
   }
 
-  async function addDailyTask(mainTaskId: string, e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const fd = new FormData(form);
-    const assignee = String(fd.get("assignedToUserId") ?? "");
-    await run(`dt-add-${mainTaskId}`, async () => {
-      await api("/daily-tasks", {
-        method: "POST",
-        body: {
-          mainTaskId,
-          title: String(fd.get("title") ?? "").trim(),
-          scheduledDate: String(fd.get("scheduledDate") ?? "") || undefined,
-          assignedToUserId: assignee || undefined,
-        },
-      });
-      form.reset();
-      setOpenDtFor(null);
-    });
-  }
-
   // ── UPDATE ──────────────────────────────────────────────────────────
   async function saveWorkType(wt: WorkType, e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -160,26 +127,9 @@ export default function WorkBuilder({ projectId, workTypes, crew }: Props) {
     });
   }
 
-  async function saveDailyTask(dt: DailyTask, e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const assignee = String(fd.get("assignedToUserId") ?? "");
-    await run(`dt-save-${dt.id}`, async () => {
-      await api(`/daily-tasks/${dt.id}`, {
-        method: "PATCH",
-        body: {
-          title: String(fd.get("title") ?? "").trim(),
-          scheduledDate: String(fd.get("scheduledDate") ?? "") || null,
-          assignedToUserId: assignee || null,
-        },
-      });
-      setEditing(null);
-    });
-  }
-
   // ── DELETE ──────────────────────────────────────────────────────────
   async function deleteEntity(
-    path: "work-types" | "main-tasks" | "daily-tasks",
+    path: "work-types" | "main-tasks",
     id: string,
     confirmMsg: string,
   ) {
@@ -273,232 +223,107 @@ export default function WorkBuilder({ projectId, workTypes, crew }: Props) {
 
           {wt.mainTasks.length > 0 && (
             <div className="space-y-2 border-t border-[var(--color-border)] pt-3">
-              {wt.mainTasks.map((mt) => (
-                <div
-                  key={mt.id}
-                  className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3"
-                >
-                  {isEditing("mt", mt.id) ? (
-                    <form
-                      onSubmit={(e) => saveMainTask(mt, e)}
-                      className="space-y-2"
-                    >
-                      <Input name="name" defaultValue={mt.name} required />
-                      <Input
-                        name="description"
-                        defaultValue={mt.description ?? ""}
-                        placeholder="Description"
-                      />
-                      <div className="grid grid-cols-2 gap-2">
-                        <Input
-                          name="startDate"
-                          type="date"
-                          defaultValue={mt.startDate ?? ""}
-                          aria-label="Start date"
-                        />
-                        <Input
-                          name="endDate"
-                          type="date"
-                          defaultValue={mt.endDate ?? ""}
-                          aria-label="End date"
-                        />
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          type="submit"
-                          size="sm"
-                          disabled={busy === `mt-save-${mt.id}`}
-                        >
-                          {busy === `mt-save-${mt.id}` ? "Saving…" : "Save"}
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => setEditing(null)}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </form>
-                  ) : (
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-[var(--color-primary)]">
-                          {mt.name}
-                        </span>
-                        <StatusBadge status={mt.status} />
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs text-gray-400">
-                          {mt.dailyTasks.length} daily step
-                          {mt.dailyTasks.length !== 1 ? "s" : ""}
-                        </span>
-                        <RowActions
-                          onEdit={() => setEditing({ kind: "mt", id: mt.id })}
-                          onDelete={() =>
-                            deleteEntity(
-                              "main-tasks",
-                              mt.id,
-                              `Delete main task "${mt.name}" and all its daily steps?`,
-                            )
-                          }
-                          busy={busy === `del-main-tasks-${mt.id}`}
-                        />
-                      </div>
-                    </div>
-                  )}
+              {wt.mainTasks.map((mt) => {
+                const total = mt.dailyTasks.length;
+                const done = mt.dailyTasks.filter((dt) => dt.status === "DONE").length;
 
-                  {mt.dailyTasks.length > 0 && (
-                    <ul className="mt-2 space-y-1 text-xs text-gray-600">
-                      {mt.dailyTasks.map((dt) => (
-                        <li
-                          key={dt.id}
-                          className="rounded bg-white px-2 py-1"
-                        >
-                          {isEditing("dt", dt.id) ? (
-                            <form
-                              onSubmit={(e) => saveDailyTask(dt, e)}
-                              className="space-y-2 py-2"
-                            >
-                              <Input name="title" defaultValue={dt.title} required />
-                              <div className="grid grid-cols-2 gap-2">
-                                <Input
-                                  name="scheduledDate"
-                                  type="date"
-                                  defaultValue={dt.scheduledDate ?? ""}
-                                  aria-label="Scheduled date"
-                                />
-                                <select
-                                  name="assignedToUserId"
-                                  defaultValue={dt.assignedToUserId ?? ""}
-                                  className="rounded-lg border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-primary)]"
-                                >
-                                  <option value="">Unassigned</option>
-                                  {crewOptions.map((o) => (
-                                    <option key={o.value} value={o.value}>
-                                      {o.label}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-                              <div className="flex gap-2">
-                                <Button
-                                  type="submit"
-                                  size="sm"
-                                  disabled={busy === `dt-save-${dt.id}`}
-                                >
-                                  {busy === `dt-save-${dt.id}` ? "Saving…" : "Save"}
-                                </Button>
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  variant="secondary"
-                                  onClick={() => setEditing(null)}
-                                >
-                                  Cancel
-                                </Button>
-                              </div>
-                            </form>
-                          ) : (
-                            <div className="flex items-center justify-between gap-2">
-                              <span>
-                                {dt.status === "DONE" ? "✅ " : "◻️ "}
-                                {dt.title}
-                                {dt.scheduledDate && (
-                                  <span className="ml-2 text-gray-400">
-                                    {dt.scheduledDate}
-                                  </span>
-                                )}
-                              </span>
-                              <div className="flex items-center gap-2">
-                                {dt.assignedToUserId && (
-                                  <span className="text-gray-400">
-                                    {crew.find(
-                                      (u) => u.id === dt.assignedToUserId,
-                                    )?.displayName ?? "—"}
-                                  </span>
-                                )}
-                                <RowActions
-                                  small
-                                  onEdit={() =>
-                                    setEditing({ kind: "dt", id: dt.id })
-                                  }
-                                  onDelete={() =>
-                                    deleteEntity(
-                                      "daily-tasks",
-                                      dt.id,
-                                      `Delete daily step "${dt.title}"?`,
-                                    )
-                                  }
-                                  busy={busy === `del-daily-tasks-${dt.id}`}
-                                />
-                              </div>
-                            </div>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-
-                  {openDtFor === mt.id ? (
-                    <form
-                      onSubmit={(e) => addDailyTask(mt.id, e)}
-                      className="mt-3 space-y-2"
-                    >
-                      <Input
-                        name="title"
-                        placeholder="Daily step (e.g. Strip south slope)"
-                        required
-                      />
-                      <div className="grid grid-cols-2 gap-2">
+                return (
+                  <div
+                    key={mt.id}
+                    className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]"
+                  >
+                    {isEditing("mt", mt.id) ? (
+                      <form
+                        onSubmit={(e) => saveMainTask(mt, e)}
+                        className="space-y-2 px-4 py-3"
+                      >
+                        <Input name="name" defaultValue={mt.name} required />
                         <Input
-                          name="scheduledDate"
-                          type="date"
-                          aria-label="Scheduled date"
+                          name="description"
+                          defaultValue={mt.description ?? ""}
+                          placeholder="Description"
                         />
-                        <select
-                          name="assignedToUserId"
-                          className="rounded-lg border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-primary)]"
-                          aria-label="Assignee"
+                        <div className="grid grid-cols-2 gap-2">
+                          <Input
+                            name="startDate"
+                            type="date"
+                            defaultValue={mt.startDate ?? ""}
+                            aria-label="Start date"
+                          />
+                          <Input
+                            name="endDate"
+                            type="date"
+                            defaultValue={mt.endDate ?? ""}
+                            aria-label="End date"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            type="submit"
+                            size="sm"
+                            disabled={busy === `mt-save-${mt.id}`}
+                          >
+                            {busy === `mt-save-${mt.id}` ? "Saving…" : "Save"}
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => setEditing(null)}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </form>
+                    ) : (
+                      <div className="flex items-center gap-2 px-4 py-3">
+                        {/* Clickable area → drill-in */}
+                        <Link
+                          href={`/admin/projects/${projectId}/main-tasks/${mt.id}`}
+                          className="group flex min-w-0 flex-1 items-center gap-3"
                         >
-                          <option value="">Unassigned</option>
-                          {crewOptions.map((o) => (
-                            <option key={o.value} value={o.value}>
-                              {o.label}
-                            </option>
-                          ))}
-                        </select>
+                          <div className="min-w-0 flex-1">
+                            <span className="text-sm font-medium text-[var(--color-primary)] group-hover:text-[var(--color-amber)] transition-colors">
+                              {mt.name}
+                            </span>
+                            {mt.description && (
+                              <p className="mt-0.5 truncate text-xs text-gray-400">
+                                {mt.description}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex shrink-0 items-center gap-2">
+                            <StatusBadge status={mt.status} />
+                            <span className="text-xs text-gray-400">
+                              {total > 0 ? `${done} / ${total} done` : "0 steps"}
+                            </span>
+                            <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-[var(--color-amber)] transition-colors" />
+                          </div>
+                        </Link>
+
+                        {/* Edit / Delete — stop propagation so link doesn't fire */}
+                        <div
+                          className="flex shrink-0 items-center gap-1"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <RowActions
+                            small
+                            onEdit={() => setEditing({ kind: "mt", id: mt.id })}
+                            onDelete={() =>
+                              deleteEntity(
+                                "main-tasks",
+                                mt.id,
+                                `Delete main task "${mt.name}" and all its daily steps?`,
+                              )
+                            }
+                            busy={busy === `del-main-tasks-${mt.id}`}
+                          />
+                        </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button
-                          type="submit"
-                          size="sm"
-                          disabled={busy === `dt-add-${mt.id}`}
-                        >
-                          {busy === `dt-add-${mt.id}` ? "Adding…" : "Add step"}
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => setOpenDtFor(null)}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </form>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setOpenDtFor(mt.id)}
-                      className="mt-2 text-xs font-medium text-[var(--color-amber)] hover:underline"
-                    >
-                      + Add daily step
-                    </button>
-                  )}
-                </div>
-              ))}
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 

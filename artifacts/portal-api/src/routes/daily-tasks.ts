@@ -354,6 +354,60 @@ router.post("/:id/complete", async (req, res, next) => {
   }
 });
 
+// POST /api/v1/daily-tasks/:id/uncomplete — assignee or admin
+router.post("/:id/uncomplete", async (req, res, next) => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const task = await db.query.dailyTask.findFirst({
+      where: eq(dailyTask.id, (req.params.id as string)),
+    });
+    if (!task) {
+      res.status(404).json({ error: "Daily task not found" });
+      return;
+    }
+
+    const isAssignee = task.assignedToUserId === req.user.userId;
+    const isAdmin = req.user.role === "ADMIN";
+    if (!isAssignee && !isAdmin) {
+      res
+        .status(403)
+        .json({ error: "Forbidden — only the assignee or an admin can uncomplete" });
+      return;
+    }
+
+    const [updated] = await db
+      .update(dailyTask)
+      .set({
+        status: "NOT_STARTED",
+        completedAt: null,
+        completedByUserId: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(dailyTask.id, (req.params.id as string)))
+      .returning();
+
+    await recomputeMainTaskStatus(task.mainTaskId);
+    const mt = await db.query.mainTask.findFirst({
+      where: eq(mainTask.id, task.mainTaskId),
+    });
+    if (mt) {
+      await recomputeWorkTypeStatus(mt.workTypeId);
+      const wt = await db.query.workType.findFirst({
+        where: eq(workType.id, mt.workTypeId),
+      });
+      if (wt) await recomputeProjectStatus(wt.projectId);
+    }
+
+    res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+});
+
 // POST /api/v1/daily-tasks/:id/photos — assignee or admin (spec-aligned alias)
 const photoUpload = multer({
   storage: multer.memoryStorage(),

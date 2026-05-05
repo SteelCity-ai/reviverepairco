@@ -134,21 +134,20 @@ export default async function AdminClientDetailPage({
         ) : (
           <div className="space-y-2">
             {sortedProjects.map((p) => (
-              <Card key={p.id} className="flex items-center justify-between">
-                <div className="min-w-0">
-                  <Link
-                    href={`/admin/projects/${p.id}`}
-                    className="font-semibold text-[var(--color-primary)] hover:text-[var(--color-amber)] transition"
-                  >
-                    {p.name}
-                  </Link>
-                  <p className="mt-0.5 text-xs text-gray-400">
-                    {formatDate(p.startDate)} → {formatDate(p.targetEndDate)}
-                    {p.actualEndDate && ` (Completed ${formatDate(p.actualEndDate)})`}
-                  </p>
-                </div>
-                <StatusBadge status={p.status} />
-              </Card>
+              <Link key={p.id} href={`/admin/projects/${p.id}`} className="block group">
+                <Card className="flex items-center justify-between transition-colors group-hover:border-[var(--color-amber)] group-hover:bg-amber-50/40 cursor-pointer">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-[var(--color-primary)] group-hover:text-[var(--color-amber)] transition-colors">
+                      {p.name}
+                    </p>
+                    <p className="mt-0.5 text-xs text-gray-400">
+                      {formatDate(p.startDate)} → {formatDate(p.targetEndDate)}
+                      {p.actualEndDate && ` (Completed ${formatDate(p.actualEndDate)})`}
+                    </p>
+                  </div>
+                  <StatusBadge status={p.status} />
+                </Card>
+              </Link>
             ))}
           </div>
         )}

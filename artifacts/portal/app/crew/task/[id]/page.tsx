@@ -37,6 +37,7 @@ export default function CrewTaskDetailPage({
   const { id } = use(params);
   const { api: callApi, upload } = useApi();
   const [task, setTask] = useState<DailyTaskRow | null>(null);
+  const [mainTaskId, setMainTaskId] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
   const [completing, setCompleting] = useState(false);
@@ -47,6 +48,7 @@ export default function CrewTaskDetailPage({
     try {
       const r = await callApi<DailyTaskRow>(`/daily-tasks/${id}`);
       setTask(r);
+      setMainTaskId(r.mainTaskId);
       setNotes(r.crewNotes ?? "");
     } catch (e) {
       setError((e as Error).message);
@@ -111,13 +113,23 @@ export default function CrewTaskDetailPage({
 
   return (
     <div className="animate-fade-in-up px-4 py-5">
-      <Link
-        href="/crew/today"
-        className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-[var(--color-amber)] transition"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back
-      </Link>
+      <div className="mb-4 flex items-center justify-between">
+        <Link
+          href="/crew/today"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-[var(--color-amber)] transition"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Link>
+        {mainTaskId && (
+          <Link
+            href={`/crew/main-task/${mainTaskId}`}
+            className="text-xs font-medium text-[var(--color-amber)] hover:underline"
+          >
+            View full checklist →
+          </Link>
+        )}
+      </div>
 
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
