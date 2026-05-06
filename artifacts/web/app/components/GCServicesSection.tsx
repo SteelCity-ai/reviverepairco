@@ -30,7 +30,7 @@ const services = [
     title: "Demolition & Site Prep",
     description:
       "Selective interior tear-outs, garage demolition, and site cleanup that leaves the project ready for the next phase.",
-    image: "/images/gallery-gc/gc-05-demolition.png",
+    image: "/images/gallery-gc/gc-05-demolition-saw.png",
     accent: "Safe, clean, coordinated",
     href: "/general-contracting/demolition",
   },
