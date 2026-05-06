@@ -138,6 +138,12 @@ uri = "file://artifacts/web/public/images/gc-hero/gc-low-voltage-data.png"
 type = "image"
 title = "generated_image"
 
+[[generated]]
+id = "0KTIK4DEt2SaD97TFE0Uq"
+uri = "file://artifacts/web/public/images/services/tree-trimming.png"
+type = "image"
+title = "generated_image"
+
 [[outputs]]
 id = "BGBY_AQgZaKaG2WHSLVIO"
 uri = "file://artifacts/web/public/images/gc-hero/gc-hero-1-commercial-rehab.png"

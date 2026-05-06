@@ -42,6 +42,14 @@ const services = [
     accent: "Flat-roof systems & coatings",
     href: "/services/commercial-roofing",
   },
+  {
+    title: "Tree Trimming & Removal",
+    description:
+      "Certified climbers handle hazard limbs, full removals, and storm-downed trees near your roof and home — cleaned up the same day, no ruts in the yard.",
+    image: "/images/services/tree-trimming.png",
+    accent: "Roof-safe & fully insured",
+    href: "/services/tree-trimming-removal",
+  },
 ];
 
 export default function ServicesSection() {

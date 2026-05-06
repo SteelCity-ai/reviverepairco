@@ -87,6 +87,21 @@ const services: Service[] = [
     ],
     image: "/images/services/demolition.png",
   },
+  {
+    slug: "tree-trimming-removal",
+    title: "Tree Trimming & Removal",
+    tagline: "Certified climbers, roof-safe takedowns",
+    description:
+      "Hazard limbs over the roof, storm-downed trees, and full removals — handled by certified climbers who know how to drop wood without dropping it on your house. Stumps ground out, debris hauled, yard left clean.",
+    bullets: [
+      "Hazard limb & overhang trimming near rooflines",
+      "Full tree removals & take-downs",
+      "Storm-damaged & leaning tree response",
+      "Stump grinding & debris haul-off",
+      "Fully insured climbers with roof-protection mats",
+    ],
+    image: "/images/services/tree-trimming.png",
+  },
 ];
 
 export default function ServicesPage() {
