@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { z } from "zod";
 import OpenAI from "openai";
+import multer from "multer";
+import { PDFParse } from "pdf-parse";
 import { db } from "../../lib/db/index.js";
 import {
   workType,
@@ -187,6 +189,182 @@ Example format:
         mainTaskName: mt.name,
         suggestions: suggestions.slice(0, count),
       });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// ── SOW Upload ──────────────────────────────────────────────────────────
+
+const sowUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const allowed = ["application/pdf", "text/plain"];
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF and text files are allowed"));
+    }
+  },
+});
+
+// POST /api/v1/ai/parse-sow
+// Upload a PDF or .txt file and extract its text content.
+router.post(
+  "/parse-sow",
+  requireAdmin,
+  sowUpload.single("file"),
+  async (req, res, next) => {
+    try {
+      if (!req.file) {
+        res.status(400).json({ error: "No file provided" });
+        return;
+      }
+
+      let text: string;
+      if (req.file.mimetype === "application/pdf") {
+        const parser = new PDFParse({ data: req.file.buffer });
+        const result = await parser.getText();
+        text = result.text;
+        await parser.destroy();
+      } else {
+        text = req.file.buffer.toString("utf-8");
+      }
+
+      res.json({ text });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// ── Build from SOW ─────────────────────────────────────────────────────────
+
+const buildFromSowSchema = z.object({
+  projectId: z.string().uuid(),
+  sowText: z.string().min(10, "SOW text must be at least 10 characters"),
+});
+
+/**
+ * POST /api/v1/ai/build-from-sow
+ * AI analyzes SOW text and returns a structured WorkType → MainTask → DailyTask hierarchy.
+ */
+router.post(
+  "/build-from-sow",
+  requireAdmin,
+  validate.body(buildFromSowSchema),
+  async (req, res, next) => {
+    try {
+      const { projectId, sowText } = req.body as {
+        projectId: string;
+        sowText: string;
+      };
+
+      const proj = await db.query.project.findFirst({
+        where: eq(project.id, projectId),
+      });
+
+      const systemPrompt = `You are an expert construction project manager and scope-of-work analyst.
+Your job is to parse a Scope of Work (SOW) document and extract a structured hierarchy of work types, main tasks, and daily tasks for a construction project.
+
+Respond with valid JSON only — no markdown fences, no explanation text, no trailing punctuation outside the JSON structure.`;
+
+      const userPrompt = `Project: "${proj?.name ?? "Unnamed project"}"
+${proj?.description ? `Description: ${proj.description}` : ""}
+
+Below is the Scope of Work text. Analyze it and extract the work it describes into a structured project plan.
+
+SCOPE OF WORK:
+${sowText}
+
+For each distinct work type (e.g. "Demolition", "Roofing", "Electrical", "Siding", "Gutters", "Interior Finishes", etc.), identify:
+1. Work type name and brief description
+2. For each work type, the main tasks (major phases or activities)
+3. For each main task, the daily steps (single-day actionable steps for a crew member)
+
+Respond with a JSON object in this exact format:
+{
+  "workTypes": [
+    {
+      "name": "Work Type Name",
+      "description": "Brief description of this work type based on the SOW",
+      "mainTasks": [
+        {
+          "name": "Main Task Name",
+          "description": "One sentence describing the task",
+          "estimatedDays": 3,
+          "dailyTasks": [
+            { "title": "Step 1 title", "description": "Specific instructions" },
+            { "title": "Step 2 title", "description": "Specific instructions" }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Guidelines:
+- Each daily task should be completable in a single day by one crew member
+- estimatedDays is the total estimated days for the main task (integer, 1-30)
+- Generate 2-5 daily tasks per main task
+- Only include work types, tasks, and steps that are explicitly or implicitly described in the SOW
+- Use clear, specific names — not generic labels`;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-5-mini",
+        max_completion_tokens: 4096,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+      });
+
+      const raw = completion.choices[0]?.message?.content ?? "{}";
+
+      interface SowDailyTask {
+        title: string;
+        description: string;
+      }
+
+      interface SowMainTask {
+        name: string;
+        description: string;
+        estimatedDays: number;
+        dailyTasks: SowDailyTask[];
+      }
+
+      interface SowWorkType {
+        name: string;
+        description: string;
+        mainTasks: SowMainTask[];
+      }
+
+      interface SowPlan {
+        workTypes: SowWorkType[];
+      }
+
+      let plan: SowPlan;
+      try {
+        const cleaned = raw
+          .replace(/```json\n?/g, "")
+          .replace(/```\n?/g, "")
+          .trim();
+        plan = JSON.parse(cleaned);
+        if (!plan.workTypes || !Array.isArray(plan.workTypes)) {
+          plan = { workTypes: [] };
+        }
+      } catch {
+        console.error("[ai] Failed to parse SOW build result:", raw);
+        res.status(422).json({
+          error: "AI returned invalid JSON",
+          raw,
+        });
+        return;
+      }
+
+      res.json(plan);
     } catch (err) {
       next(err);
     }
