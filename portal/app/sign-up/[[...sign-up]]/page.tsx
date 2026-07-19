@@ -1,17 +1,16 @@
-import { SignIn } from "@clerk/nextjs";
+import { SignUp } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 
-export default function SignInPage() {
+export default function SignUpPage() {
   return (
     <div className="flex min-h-screen">
-      {/* Left Panel — Brand (matching existing split-panel login) */}
+      {/* Left Panel — Brand */}
       <div className="relative hidden w-1/2 items-center justify-center overflow-hidden bg-[var(--color-primary)] lg:flex">
-        {/* Gradient overlay */}
         <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(26,32,44,0.95)_0%,rgba(26,32,44,0.7)_100%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(214,158,46,0.18),transparent_50%)]" />
 
-        <div className="relative z-10 max-w-md px-8 text-center animate-fade-in-up">
+        <div className="relative z-10 max-w-md px-8 text-center">
           <div className="mb-8">
             <Image
               src="/images/revive-logo-v3.png"
@@ -21,10 +20,10 @@ export default function SignInPage() {
               className="mx-auto h-auto w-48 brightness-0 invert"
             />
           </div>
-          <h2 className="mb-4 text-2xl font-bold text-white">Welcome to the Revive Portal</h2>
+          <h2 className="mb-4 text-2xl font-bold text-white">Create Your Account</h2>
           <p className="text-white/70">
-            Project management for roofing and general contracting in Central Pennsylvania.
-            Access your projects, tasks, and approvals.
+            Join the Revive Portal to track your projects, communicate with your
+            crew, and stay up to date on every job.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-2">
             {["Roofing", "Siding", "Gutters", "Storm Repair"].map((svc) => (
@@ -39,17 +38,16 @@ export default function SignInPage() {
         </div>
       </div>
 
-      {/* Right Panel — Sign In */}
+      {/* Right Panel — Sign Up */}
       <div className="flex w-full items-center justify-center bg-white px-4 lg:w-1/2">
-        <div className="w-full max-w-md animate-fade-in-up">
+        <div className="w-full max-w-md">
           <div className="mb-8 text-center lg:hidden">
             <div className="mb-2 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-amber)] text-sm font-bold text-[var(--color-primary)]">
               R
             </div>
             <h1 className="text-xl font-bold text-[var(--color-primary)]">Revive Portal</h1>
           </div>
-          <SignIn
-            signUpUrl="/sign-up"
+          <SignUp
             appearance={{
               elements: {
                 card: "shadow-none border-0",
@@ -65,12 +63,12 @@ export default function SignInPage() {
             }}
           />
           <p className="mt-4 text-center text-xs text-gray-400">
-            Don&apos;t have an account?{" "}
+            Already have an account?{" "}
             <Link
-              href="/sign-up"
+              href="/sign-in"
               className="font-medium text-[var(--color-amber)] hover:text-[var(--color-amber-light)]"
             >
-              Sign up
+              Sign in
             </Link>
           </p>
         </div>
