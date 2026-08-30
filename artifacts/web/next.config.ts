@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 
 const replitDomains = (process.env.REPLIT_DOMAINS ?? "")
   .split(",")
@@ -16,8 +17,11 @@ const devOrigins = Array.from(
 );
 
 const nextConfig: NextConfig = {
+  // Monorepo root (contains pnpm-lock.yaml). Turbopack auto-detects the root
+  // via the lockfile, but keep an explicit path-safe fallback for environments
+  // where the Replit-specific hardcode used to break builds.
   turbopack: {
-    root: "/home/runner/workspace",
+    root: path.join(__dirname, "../.."),
   },
   allowedDevOrigins: devOrigins,
   images: {
