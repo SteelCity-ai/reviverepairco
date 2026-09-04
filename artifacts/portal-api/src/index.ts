@@ -26,6 +26,7 @@ import activityLogRouter from "./routes/activity-log.js";
 import aiRouter from "./routes/ai.js";
 import mediaRouter from "./routes/media.js";
 import serviceRequestsRouter from "./routes/service-requests.js";
+import serviceRequestsInternalRouter from "./routes/service-requests-internal.js";
 import blogRouter, { publicRouter as blogPublicRouter } from "./routes/blog.js";
 import blogAiRouter from "./routes/blog-ai.js";
 
@@ -80,6 +81,7 @@ app.use("/api/v1/healthz", healthRouter);
 // ── Internal routes (bearer-secret auth, not Clerk) ────────────────────────
 
 app.use("/api/v1/internal", dailySummaryRouter);
+app.use("/api/v1/internal", serviceRequestsInternalRouter);
 
 // ── Clerk-protected routes ─────────────────────────────────────────────────
 

@@ -6,7 +6,8 @@ type Status = "idle" | "submitting" | "success" | "error";
 
 export default function ContactForm() {
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     phone: "",
     email: "",
     serviceType: "",
@@ -21,10 +22,11 @@ export default function ContactForm() {
     setErrorMessage("");
 
     const payload = {
-      name: formData.name.trim(),
+      firstName: formData.firstName.trim(),
+      lastName: formData.lastName.trim(),
       phone: formData.phone.trim(),
       email: formData.email.trim(),
-      service: formData.serviceType,
+      serviceType: formData.serviceType,
       message: formData.message.trim(),
     };
 
@@ -41,7 +43,7 @@ export default function ContactForm() {
       }
 
       setStatus("success");
-      setFormData({ name: "", phone: "", email: "", serviceType: "", message: "" });
+      setFormData({ firstName: "", lastName: "", phone: "", email: "", serviceType: "", message: "" });
     } catch (err) {
       setStatus("error");
       setErrorMessage(
@@ -105,22 +107,42 @@ export default function ContactForm() {
       )}
 
       <div className="space-y-4">
-        <div>
-          <label
-            htmlFor="name"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Your Name
-          </label>
-          <input
-            type="text"
-            id="name"
-            required
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e63946] focus:border-transparent outline-none transition-all"
-            placeholder="John Smith"
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label
+              htmlFor="firstName"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              First Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="firstName"
+              required
+              value={formData.firstName}
+              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e63946] focus:border-transparent outline-none transition-all"
+              placeholder="John"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="lastName"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Last Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="lastName"
+              required
+              value={formData.lastName}
+              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e63946] focus:border-transparent outline-none transition-all"
+              placeholder="Smith"
+            />
+          </div>
         </div>
 
         <div>
