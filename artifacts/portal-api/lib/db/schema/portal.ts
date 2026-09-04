@@ -116,6 +116,42 @@ export const checklistItemStatus = pgEnum("checklist_item_status", [
   "FAIL",
 ]);
 
+
+// ── RAP-2.0 Enums ──────────────────────────────────────────────────────────
+
+export const serviceRequestType = pgEnum("service_request_type", [
+  "emergency",
+  "leak",
+  "storm",
+  "replacement",
+  "inspection",
+  "commercial",
+  "other",
+]);
+
+export const serviceRequestSource = pgEnum("service_request_source", [
+  "website_form",
+  "admin",
+  "phone",
+  "referral",
+]);
+
+export const serviceRequestStatus = pgEnum("service_request_status", [
+  "new",
+  "reviewed",
+  "scheduled",
+  "completed",
+  "closed",
+  "converted",
+]);
+
+export const serviceRequestPriority = pgEnum("service_request_priority", [
+  "low",
+  "normal",
+  "high",
+  "urgent",
+]);
+
 // ── Tables ─────────────────────────────────────────────────────────────────
 
 // --- client ---
@@ -615,6 +651,50 @@ export const checklistItemInstance = pgTable(
   ],
 );
 
+
+// ── RAP-2.0: service_request ──────────────────────────────────────────────
+// Per ADR D5 (RAP-1.0 §e): intake from website /api/contact + admin CRUD.
+// service_type aligns with ContactForm.tsx values (website_form source).
+
+export const serviceRequest = pgTable(
+  "service_request",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    firstName: varchar("first_name", { length: 255 }).notNull(),
+    lastName: varchar("last_name", { length: 255 }).notNull(),
+    email: varchar("email", { length: 255 }).notNull(),
+    phone: varchar("phone", { length: 50 }),
+    serviceType: serviceRequestType("service_type").notNull(),
+    description: text("description"),
+    addressLine1: varchar("address_line1", { length: 255 }),
+    city: varchar("city", { length: 100 }),
+    state: varchar("state", { length: 50 }).default("PA"),
+    postalCode: varchar("postal_code", { length: 20 }),
+    source: serviceRequestSource("source").notNull().default("website_form"),
+    status: serviceRequestStatus("status").notNull().default("new"),
+    priority: serviceRequestPriority("priority").notNull().default("normal"),
+    assignedToUserId: uuid("assigned_to_user_id").references(
+      () => userProfile.id,
+      { onDelete: "set null" },
+    ),
+    estimatedCost: decimal("estimated_cost", { precision: 12, scale: 2 }),
+    finalCost: decimal("final_cost", { precision: 12, scale: 2 }),
+    internalNotes: text("internal_notes"),
+    convertedProjectId: uuid("converted_project_id").references(
+      () => project.id,
+      { onDelete: "set null" },
+    ),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index("idx_service_request_status").on(t.status),
+    index("idx_service_request_email").on(t.email),
+    index("idx_service_request_assigned").on(t.assignedToUserId),
+    index("idx_service_request_converted_project").on(t.convertedProjectId),
+  ],
+);
+
 // ── Drizzle Relations ──────────────────────────────────────────────────────
 
 export const clientRelations = relations(client, ({ many }) => ({
@@ -644,6 +724,7 @@ export const userProfileRelations = relations(userProfile, ({ one, many }) => ({
   approvedChangeOrders: many(changeOrder, { relationName: "coApprover" }),
   timeEntries: many(timeEntry),
   completedChecklistItems: many(checklistItemInstance),
+  assignedServiceRequests: many(serviceRequest, { relationName: "serviceAssignedTo" }),
 }));
 
 export const projectRelations = relations(project, ({ one, many }) => ({
@@ -664,6 +745,7 @@ export const projectRelations = relations(project, ({ one, many }) => ({
   dailyLogs: many(dailyLog),
   selections: many(selection),
   timeEntries: many(timeEntry),
+  convertedServiceRequests: many(serviceRequest, { relationName: "svcReqConvertedProject" }),
 }));
 
 export const workTypeRelations = relations(workType, ({ one, many }) => ({
@@ -724,6 +806,7 @@ export const dailyTaskRelations = relations(dailyTask, ({ one, many }) => ({
   }),
   photos: many(taskPhoto),
   timeEntries: many(timeEntry),
+  convertedServiceRequests: many(serviceRequest, { relationName: "svcReqConvertedProject" }),
 }));
 
 export const taskPhotoRelations = relations(taskPhoto, ({ one }) => ({
@@ -902,6 +985,20 @@ export const checklistItemInstanceRelations = relations(
   }),
 );
 
+
+export const serviceRequestRelations = relations(serviceRequest, ({ one }) => ({
+  assignedTo: one(userProfile, {
+    fields: [serviceRequest.assignedToUserId],
+    references: [userProfile.id],
+    relationName: "serviceAssignedTo",
+  }),
+  convertedProject: one(project, {
+    fields: [serviceRequest.convertedProjectId],
+    references: [project.id],
+    relationName: "svcReqConvertedProject",
+  }),
+}));
+
 // ── Inferred Types ─────────────────────────────────────────────────────────
 
 export type Client = InferSelectModel<typeof client>;
@@ -923,3 +1020,5 @@ export type TimeEntry = InferSelectModel<typeof timeEntry>;
 export type ChecklistTemplate = InferSelectModel<typeof checklistTemplate>;
 export type ChecklistInstance = InferSelectModel<typeof checklistInstance>;
 export type ChecklistItemInstance = InferSelectModel<typeof checklistItemInstance>;
+
+export type ServiceRequest = InferSelectModel<typeof serviceRequest>;

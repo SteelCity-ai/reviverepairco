@@ -1,21 +1,17 @@
 /**
- * Drizzle migration runner.
+ * ⚠️ DEPRECATED — Migration runner has been removed.
  *
- * Usage: tsx lib/db/migrate.ts
+ * The actual migration workflow is `drizzle-kit push` (`db:push` in
+ * artifacts/portal-api/package.json). There is no `lib/db/migrations`
+ * directory and this script is non-functional.
+ *
+ * To apply schema changes, use:
+ *   cd artifacts/portal-api && pnpm db:push
  */
+import { fileURLToPath } from "node:url";
 
-import { migrate } from "drizzle-orm/postgres-js/migrator";
-import { db } from "./index";
-import * as schema from "./schema/portal";
-
-async function main() {
-  console.log("Running migrations...");
-  await migrate(db, { migrationsFolder: "./lib/db/migrations" });
-  console.log("Migrations complete.");
-  process.exit(0);
-}
-
-main().catch((err) => {
-  console.error("Migration failed:", err);
-  process.exit(1);
-});
+const script = fileURLToPath(import.meta.url);
+console.error(`ERROR: ${script} is deprecated.`);
+console.error("Use 'cd artifacts/portal-api && pnpm db:push' instead.");
+console.error("This script references a nonexistent migrations directory.");
+process.exit(1);
