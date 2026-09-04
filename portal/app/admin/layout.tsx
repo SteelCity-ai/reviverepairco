@@ -5,6 +5,8 @@ const navItems = [
   { href: "/admin/dashboard", label: "Dashboard", icon: "◉" },
   { href: "/admin/projects", label: "Projects", icon: "▦" },
   { href: "/admin/clients", label: "Clients", icon: "◷" },
+  { href: "/admin/service-requests", label: "Service Requests", icon: "✉" },
+  { href: "/admin/blog", label: "Blog", icon: "✎" },
   { href: "/admin/users", label: "Users", icon: "◎" },
 ];
 
