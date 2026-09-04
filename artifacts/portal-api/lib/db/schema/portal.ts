@@ -152,6 +152,33 @@ export const serviceRequestPriority = pgEnum("service_request_priority", [
   "urgent",
 ]);
 
+// ── RAP-2.1 Blog Enums ────────────────────────────────────────────────────
+
+export const blogPostStatus = pgEnum("blog_post_status", [
+  "draft",
+  "pending_review",
+  "published",
+]);
+
+export const blogInsightStatus = pgEnum("blog_insight_status", [
+  "new",
+  "used",
+  "dismissed",
+]);
+
+export const blogJobType = pgEnum("blog_generation_job_type", [
+  "research",
+  "article",
+  "image",
+]);
+
+export const blogJobStatus = pgEnum("blog_generation_job_status", [
+  "queued",
+  "running",
+  "succeeded",
+  "failed",
+]);
+
 // ── Tables ─────────────────────────────────────────────────────────────────
 
 // --- client ---
@@ -695,6 +722,96 @@ export const serviceRequest = pgTable(
   ],
 );
 
+
+// ── RAP-2.1: blog_posts ───────────────────────────────────────────────────
+// Per ADR D3 (RAP-1.0 §c): content model with status gate (draft → pending_review → published).
+// Replaces APS binary is_published; carries provenance columns for AI research pipeline.
+
+export const blogPosts = pgTable(
+  "blog_posts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    title: varchar("title", { length: 255 }).notNull(),
+    slug: varchar("slug", { length: 255 }).notNull().unique(),
+    excerpt: text("excerpt"),
+    content: text("content"),
+    author: varchar("author", { length: 255 }),
+    featuredImage: varchar("featured_image", { length: 500 }),
+    category: varchar("category", { length: 100 }),
+    tags: jsonb("tags").default("[]").notNull(),
+    status: blogPostStatus("status").notNull().default("draft"),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    publishedByUserId: uuid("published_by_user_id").references(
+      () => userProfile.id,
+      { onDelete: "set null" },
+    ),
+    metaTitle: varchar("meta_title", { length: 255 }),
+    metaDescription: text("meta_description"),
+    sourceInsightId: uuid("source_insight_id"),
+    sourceUrl: text("source_url"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index("idx_blog_posts_slug").on(t.slug),
+    index("idx_blog_posts_status").on(t.status),
+    index("idx_blog_posts_category").on(t.category),
+    index("idx_blog_posts_published_at").on(t.publishedAt),
+  ],
+);
+
+// ── RAP-2.1: blog_insights ────────────────────────────────────────────────
+// Per ADR D3 (RAP-1.0 §c.2) + RAP-0.3 PokerThreads model: research-run output
+// with triage status (new → used | dismissed) and source provenance.
+
+export const blogInsights = pgTable(
+  "blog_insights",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    researchRunId: uuid("research_run_id").notNull(),
+    insightText: text("insight_text").notNull(),
+    sourceUrl: text("source_url"),
+    sourceTitle: text("source_title"),
+    feedUrl: text("feed_url"),
+    status: blogInsightStatus("status").notNull().default("new"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index("idx_blog_insights_run").on(t.researchRunId),
+    index("idx_blog_insights_status").on(t.status),
+  ],
+);
+
+// ── RAP-2.1: blog_generation_jobs ─────────────────────────────────────────
+// Per ADR D3 (RAP-1.0 §c.7): audit surface for research runs, article generation,
+// and image generation jobs (SSE batch runs).
+
+export const blogGenerationJobs = pgTable(
+  "blog_generation_jobs",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    postId: uuid("post_id").references(() => blogPosts.id, {
+      onDelete: "set null",
+    }),
+    type: blogJobType("type").notNull(),
+    status: blogJobStatus("status").notNull().default("queued"),
+    params: jsonb("params").default("{}").notNull(),
+    provider: varchar("provider", { length: 100 }),
+    error: text("error"),
+    createdByUserId: uuid("created_by_user_id").references(
+      () => userProfile.id,
+      { onDelete: "set null" },
+    ),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index("idx_blog_jobs_post").on(t.postId),
+    index("idx_blog_jobs_type").on(t.type),
+    index("idx_blog_jobs_status").on(t.status),
+  ],
+);
 // ── Drizzle Relations ──────────────────────────────────────────────────────
 
 export const clientRelations = relations(client, ({ many }) => ({
@@ -999,6 +1116,34 @@ export const serviceRequestRelations = relations(serviceRequest, ({ one }) => ({
   }),
 }));
 
+
+// ── RAP-2.1 Blog Relations ────────────────────────────────────────────────
+
+export const blogPostsRelations = relations(blogPosts, ({ one, many }) => ({
+  publishedBy: one(userProfile, {
+    fields: [blogPosts.publishedByUserId],
+    references: [userProfile.id],
+    relationName: "blogPostPublisher",
+  }),
+  generationJobs: many(blogGenerationJobs),
+}));
+
+export const blogInsightsRelations = relations(blogInsights, ({ many }) => ({
+  generationJobs: many(blogGenerationJobs),
+}));
+
+export const blogGenerationJobsRelations = relations(blogGenerationJobs, ({ one }) => ({
+  post: one(blogPosts, {
+    fields: [blogGenerationJobs.postId],
+    references: [blogPosts.id],
+    relationName: "blogJobPost",
+  }),
+  createdBy: one(userProfile, {
+    fields: [blogGenerationJobs.createdByUserId],
+    references: [userProfile.id],
+    relationName: "blogJobCreator",
+  }),
+}));
 // ── Inferred Types ─────────────────────────────────────────────────────────
 
 export type Client = InferSelectModel<typeof client>;
@@ -1022,3 +1167,7 @@ export type ChecklistInstance = InferSelectModel<typeof checklistInstance>;
 export type ChecklistItemInstance = InferSelectModel<typeof checklistItemInstance>;
 
 export type ServiceRequest = InferSelectModel<typeof serviceRequest>;
+
+export type BlogPost = InferSelectModel<typeof blogPosts>;
+export type BlogInsight = InferSelectModel<typeof blogInsights>;
+export type BlogGenerationJob = InferSelectModel<typeof blogGenerationJobs>;
