@@ -24,6 +24,7 @@ import checklistsRouter from "./routes/checklists.js";
 import dailySummaryRouter from "./routes/daily-summary.js";
 import activityLogRouter from "./routes/activity-log.js";
 import aiRouter from "./routes/ai.js";
+import mediaRouter from "./routes/media.js";
 
 const app: express.Express = express();
 const PORT = parseInt(process.env.PORT ?? "3002", 10);
@@ -99,6 +100,7 @@ app.use("/api/v1/time-entries", timeEntriesRouter);
 app.use("/api/v1/checklists", checklistsRouter);
 app.use("/api/v1/activity", activityLogRouter);
 app.use("/api/v1/ai", aiRouter);
+app.use("/api/v1/media", mediaRouter);
 
 // ── Error handling ─────────────────────────────────────────────────────────
 
