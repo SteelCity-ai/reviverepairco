@@ -45,6 +45,8 @@ export function Badge({
 
 /**
  * StatusBadge — maps domain status strings to visual variants.
+ * Extended per RAP-3.0 §2.2 for service-request statuses, blog statuses,
+ * and priority levels.
  */
 export function StatusBadge({ status }: { status: string }) {
   const variant = mapStatusToVariant(status);
@@ -55,17 +57,22 @@ export function StatusBadge({ status }: { status: string }) {
 function mapStatusToVariant(status: string): StatusVariant {
   const s = status.toUpperCase();
   switch (s) {
+    // ── Existing (project/client) ────────────────────────────────
     case "ACTIVE":
     case "IN_PROGRESS":
+    case "SCHEDULED":
       return "active";
     case "COMPLETE":
     case "DONE":
     case "RESOLVED":
     case "VERIFIED":
+    case "PUBLISHED":
       return "complete";
     case "PM_REVIEW":
+    case "REVIEWED":
       return "review";
     case "CLIENT_SIGNOFF":
+    case "CONVERTED":
       return "signoff";
     case "ON_HOLD":
       return "on-hold";
@@ -76,11 +83,16 @@ function mapStatusToVariant(status: string): StatusVariant {
     case "PENDING":
     case "NOT_STARTED":
     case "PLANNED":
+    case "NEW":
+    case "PENDING_REVIEW":
       return "pending";
     case "APPROVED":
       return "approved";
     case "REJECTED":
       return "rejected";
+    // ── Service-request statuses ─────────────────────────────────
+    case "CLOSED":
+      return "default";
     default:
       return "default";
   }
