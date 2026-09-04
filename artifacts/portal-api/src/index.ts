@@ -27,6 +27,7 @@ import aiRouter from "./routes/ai.js";
 import mediaRouter from "./routes/media.js";
 import serviceRequestsRouter from "./routes/service-requests.js";
 import blogRouter, { publicRouter as blogPublicRouter } from "./routes/blog.js";
+import blogAiRouter from "./routes/blog-ai.js";
 
 const app: express.Express = express();
 const PORT = parseInt(process.env.PORT ?? "3002", 10);
@@ -106,6 +107,7 @@ app.use("/api/v1/ai", aiRouter);
 app.use("/api/v1/media", mediaRouter);
 app.use("/api/v1/service-requests", serviceRequestsRouter);
 app.use("/api/v1/blog", blogRouter);
+app.use("/api/v1/blog-ai", blogAiRouter);
 
 // ── Error handling ─────────────────────────────────────────────────────────
 
