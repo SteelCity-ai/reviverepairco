@@ -21,10 +21,8 @@ const nextConfig: NextConfig = {
   basePath,
   assetPrefix: basePath || undefined,
   allowedDevOrigins: devOrigins,
+  output: "standalone",
   serverExternalPackages: ["postgres"],
-  turbopack: {
-    root: "/home/runner/workspace",
-  },
   env: {
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.CLERK_PUBLISHABLE_KEY,
     NEXT_PUBLIC_CLERK_SIGN_IN_URL: `${basePath}/sign-in`,

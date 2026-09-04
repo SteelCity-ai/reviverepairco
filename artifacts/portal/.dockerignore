@@ -1,0 +1,51 @@
+# ── Revive Portal — .dockerignore ───────────────────────────────────────────
+
+# Dependencies
+node_modules/
+.pnpm/
+
+# Build output
+.next/
+dist/
+
+# Environment (secrets)
+.env
+.env.local
+.env.production
+.env*.local
+
+# Git
+.git/
+.gitignore
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# Tests
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# CI
+.github/
+
+# Documentation
+*.md
