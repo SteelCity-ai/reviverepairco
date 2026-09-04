@@ -17,6 +17,9 @@ const createClientSchema = z.object({
   phone: z.string().max(50).optional(),
   billingAddress: z.record(z.unknown()).optional(),
   notes: z.string().optional(),
+  clientType: z.enum(["prospect", "client"]).optional(),
+  status: z.enum(["active", "inactive", "lead"]).optional(),
+  propertyType: z.enum(["residential", "commercial"]).optional(),
 });
 
 const updateClientSchema = createClientSchema.partial();

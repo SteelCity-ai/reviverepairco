@@ -98,6 +98,28 @@ export default async function AdminClientDetailPage({
                 {sortedProjects.length}
               </dd>
             </div>
+            <div>
+              <dt className="text-xs font-medium uppercase tracking-wide text-gray-400">Client Type</dt>
+              <dd className="mt-1 text-sm text-gray-600">
+                <span className="inline-flex items-center rounded-full bg-[var(--color-surface)] px-2.5 py-0.5 text-xs font-medium">
+                  {client.clientType || "—"}
+                </span>
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium uppercase tracking-wide text-gray-400">Status</dt>
+              <dd className="mt-1 text-sm text-gray-600">
+                <span className="inline-flex items-center rounded-full bg-[var(--color-surface)] px-2.5 py-0.5 text-xs font-medium">
+                  {client.status || "—"}
+                </span>
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium uppercase tracking-wide text-gray-400">Property Type</dt>
+              <dd className="mt-1 text-sm text-gray-600">
+                {client.propertyType || "—"}
+              </dd>
+            </div>
             <div className="sm:col-span-2 lg:col-span-3">
               <dt className="text-xs font-medium uppercase tracking-wide text-gray-400">Billing Address</dt>
               <dd className="mt-1 text-sm text-gray-600">

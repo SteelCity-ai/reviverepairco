@@ -6,6 +6,10 @@
  * lands, replace with actual Drizzle InferSelectModel imports.
  */
 
+export type ClientType = "prospect" | "client";
+export type ClientStatus = "active" | "inactive" | "lead";
+export type PropertyType = "residential" | "commercial";
+
 export interface Client {
   id: string;
   companyName: string;
@@ -14,6 +18,9 @@ export interface Client {
   phone: string | null;
   billingAddress: unknown;
   notes: string | null;
+  clientType: ClientType | null;
+  status: ClientStatus | null;
+  propertyType: PropertyType | null;
   createdAt: string;
   updatedAt: string;
 }

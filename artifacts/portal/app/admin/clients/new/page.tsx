@@ -8,6 +8,7 @@ import { useApi } from "@/lib/api-browser";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 
 interface CreatedClient {
   id: string;
@@ -20,6 +21,9 @@ export default function NewClientPage() {
   const [primaryContactName, setPrimaryContactName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [clientType, setClientType] = useState("prospect");
+  const [status, setStatus] = useState("lead");
+  const [propertyType, setPropertyType] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +40,9 @@ export default function NewClientPage() {
           primaryContactName: primaryContactName.trim(),
           email: email.trim(),
           phone: phone.trim() || undefined,
+          clientType: clientType || undefined,
+          status: status || undefined,
+          propertyType: propertyType || undefined,
           notes: notes.trim() || undefined,
         },
       });
@@ -98,6 +105,37 @@ export default function NewClientPage() {
               label="Phone"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Select
+                label="Client Type"
+                value={clientType}
+                onChange={(e) => setClientType(e.target.value)}
+                options={[
+                  { value: "prospect", label: "Prospect" },
+                  { value: "client", label: "Client" },
+                ]}
+              />
+              <Select
+                label="Status"
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                options={[
+                  { value: "lead", label: "Lead" },
+                  { value: "active", label: "Active" },
+                  { value: "inactive", label: "Inactive" },
+                ]}
+              />
+            </div>
+            <Select
+              label="Property Type"
+              value={propertyType}
+              onChange={(e) => setPropertyType(e.target.value)}
+              placeholder="Select property type"
+              options={[
+                { value: "residential", label: "Residential" },
+                { value: "commercial", label: "Commercial" },
+              ]}
             />
             <div>
               <label className="mb-1 block text-sm font-medium text-[var(--color-primary)]">

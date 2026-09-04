@@ -179,6 +179,20 @@ export const blogJobStatus = pgEnum("blog_generation_job_status", [
   "failed",
 ]);
 
+// ── RAP-3.1: client enums ────────────────────────────────────────────────────
+export const clientType = pgEnum("client_type", ["prospect", "client"]);
+
+export const clientStatus = pgEnum("client_status", [
+  "active",
+  "inactive",
+  "lead",
+]);
+
+export const propertyType = pgEnum("property_type", [
+  "residential",
+  "commercial",
+]);
+
 // ── Tables ─────────────────────────────────────────────────────────────────
 
 // --- client ---
@@ -190,6 +204,9 @@ export const client = pgTable("client", {
   phone: varchar("phone", { length: 50 }),
   billingAddress: jsonb("billing_address"),
   notes: text("notes"),
+  clientType: clientType("client_type").default("prospect"),
+  status: clientStatus("status").default("lead"),
+  propertyType: propertyType("property_type"),
   archivedAt: timestamp("archived_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
