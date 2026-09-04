@@ -26,6 +26,7 @@ import activityLogRouter from "./routes/activity-log.js";
 import aiRouter from "./routes/ai.js";
 import mediaRouter from "./routes/media.js";
 import serviceRequestsRouter from "./routes/service-requests.js";
+import blogRouter, { publicRouter as blogPublicRouter } from "./routes/blog.js";
 
 const app: express.Express = express();
 const PORT = parseInt(process.env.PORT ?? "3002", 10);
@@ -81,6 +82,7 @@ app.use("/api/v1/internal", dailySummaryRouter);
 
 // ── Clerk-protected routes ─────────────────────────────────────────────────
 
+app.use("/api/v1/public/blog", blogPublicRouter);
 app.use("/api/v1", clerkAuth);
 
 app.use("/api/v1/me", meRouter);
@@ -103,6 +105,7 @@ app.use("/api/v1/activity", activityLogRouter);
 app.use("/api/v1/ai", aiRouter);
 app.use("/api/v1/media", mediaRouter);
 app.use("/api/v1/service-requests", serviceRequestsRouter);
+app.use("/api/v1/blog", blogRouter);
 
 // ── Error handling ─────────────────────────────────────────────────────────
 
