@@ -63,7 +63,7 @@ router.get("/", requireAdmin, async (req, res, next) => {
 router.get("/:id", requireAdmin, async (req, res, next) => {
   try {
     const result = await db.query.userProfile.findFirst({
-      where: eq(userProfile.id, req.params.id!),
+      where: eq(userProfile.id, req.params.id as string),
     });
     if (!result) {
       res.status(404).json({ error: "User not found" });
@@ -120,7 +120,7 @@ router.patch(
       const [updated] = await db
         .update(userProfile)
         .set({ ...req.body, updatedAt: new Date() })
-        .where(eq(userProfile.id, req.params.id!))
+        .where(eq(userProfile.id, req.params.id as string))
         .returning();
 
       if (!updated) {
@@ -140,14 +140,14 @@ router.delete("/:id", requireAdmin, async (req, res, next) => {
     const [archived] = await db
       .update(userProfile)
       .set({ archivedAt: new Date(), updatedAt: new Date() })
-      .where(eq(userProfile.id, req.params.id!))
+      .where(eq(userProfile.id, req.params.id as string))
       .returning();
 
     if (!archived) {
       res.status(404).json({ error: "User not found" });
       return;
     }
-    res.json({ id: req.params.id, archivedAt: archived.archivedAt });
+    res.json({ id: req.params.id as string, archivedAt: archived.archivedAt });
   } catch (err) {
     next(err);
   }

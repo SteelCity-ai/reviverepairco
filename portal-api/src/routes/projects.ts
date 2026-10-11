@@ -6,6 +6,7 @@ import { eq, ilike, and, or, desc } from "drizzle-orm";
 import { validate } from "../middleware/validate.js";
 import { requireAdmin, requireStaff } from "../middleware/auth.js";
 import { logActivity } from "../lib/db-helpers.js";
+import { assertProjectAccess, requireUser } from "../lib/project-access.js";
 
 const router = Router();
 
@@ -44,6 +45,11 @@ const updateProjectSchema = z.object({
 
 // GET /api/v1/projects — list with optional filters
 router.get("/", async (req, res, next) => {
+  const user = requireUser(req.user);
+  if (!user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   try {
     const status = req.query.status as string | undefined;
     const clientId = req.query.clientId as string | undefined;
@@ -117,9 +123,14 @@ router.post(
 
 // GET /api/v1/projects/:id — single project with relations
 router.get("/:id", async (req, res, next) => {
+  const user = requireUser(req.user);
+  if (!user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   try {
     const result = await db.query.project.findFirst({
-      where: eq(project.id, req.params.id!),
+      where: eq(project.id, req.params.id as string),
       with: {
         client: true,
         projectManager: true,
@@ -133,13 +144,13 @@ router.get("/:id", async (req, res, next) => {
       return;
     }
 
-    // Client users can only see their own projects
-    if (
-      req.user?.role === "CLIENT" &&
-      req.user.clientId !== result.clientId
-    ) {
-      res.status(403).json({ error: "Forbidden" });
-      return;
+    // Access gate: CLIENT sees own projects only; CREW needs assignment or PM role
+    if (user.role !== "ADMIN") {
+      const access = await assertProjectAccess(user, req.params.id!);
+      if (!access.ok) {
+        res.status(access.status).json({ error: access.error });
+        return;
+      }
     }
 
     res.json(result);
@@ -156,7 +167,7 @@ router.patch(
   async (req, res, next) => {
     try {
       const prev = await db.query.project.findFirst({
-        where: eq(project.id, req.params.id!),
+        where: eq(project.id, req.params.id as string),
       });
       if (!prev) {
         res.status(404).json({ error: "Project not found" });
@@ -166,17 +177,17 @@ router.patch(
       const [updated] = await db
         .update(project)
         .set({ ...req.body, updatedAt: new Date() })
-        .where(eq(project.id, req.params.id!))
+        .where(eq(project.id, req.params.id as string))
         .returning();
 
       // Log status transitions
       if (req.body.status && req.body.status !== prev.status) {
         await logActivity(
-          req.params.id!,
+          req.params.id as string,
           req.user!.userId,
           `status_change:${prev.status}→${req.body.status}`,
           "PROJECT",
-          req.params.id!,
+          req.params.id as string,
         );
       }
 
@@ -189,7 +200,18 @@ router.patch(
 
 // GET /api/v1/projects/:id/activity — activity feed
 router.get("/:id/activity", async (req, res, next) => {
+  const user = requireUser(req.user);
+  if (!user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   try {
+    const access = await assertProjectAccess(user, req.params.id!);
+    if (!access.ok) {
+      res.status(access.status).json({ error: access.error });
+      return;
+    }
+
     const { activityLog } = await import(
       "../../lib/db/schema/portal.js"
     );

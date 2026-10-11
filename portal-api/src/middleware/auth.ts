@@ -1,5 +1,5 @@
-import type { Request, Response, NextFunction } from "express";
-import { requireAuth, type ClerkExpressRequireAuth } from "@clerk/express";
+import type { Request, Response, NextFunction, RequestHandler } from "express";
+import { getAuth, requireAuth } from "@clerk/express";
 import { db } from "../../lib/db/index.js";
 import { userProfile } from "../../lib/db/schema/portal.js";
 import { eq, isNull } from "drizzle-orm";
@@ -19,16 +19,18 @@ async function loadUserProfile(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const clerkUserId = req.auth?.userId;
+    const auth = getAuth(req);
+    const clerkUserId = auth?.userId ?? null;
     if (!clerkUserId) {
       res.status(401).json({ error: "Unauthorized — no Clerk session" });
       return;
     }
 
     // Extract metadata from Clerk session claims
-    const sessionClaims = req.auth?.sessionClaims as Record<string, unknown> | undefined;
-    const publicMetadata =
-      (sessionClaims?.publicMetadata as Record<string, unknown>) ?? {};
+    const sessionClaims = (auth?.sessionClaims ?? null) as
+      | (Record<string, unknown> & { publicMetadata?: Record<string, unknown> })
+      | null;
+    const publicMetadata = sessionClaims?.publicMetadata ?? {};
     const clerkRole = (publicMetadata?.role as string) ?? "CREW";
 
     // Look up existing profile
@@ -82,7 +84,7 @@ async function loadUserProfile(
 }
 
 /** Combined Clerk auth + user-profile loading middleware. */
-export const clerkAuth = [requireAuth() as ClerkExpressRequireAuth, loadUserProfile];
+export const clerkAuth: RequestHandler[] = [requireAuth(), loadUserProfile];
 
 // ── Role guard middleware ───────────────────────────────────────────────────
 

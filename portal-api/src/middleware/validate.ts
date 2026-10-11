@@ -18,8 +18,8 @@ function createValidator(
       const parsed = schema.parse(req[source]);
       // Replace the source with the parsed (and coerced) value
       if (source === "body") req.body = parsed;
-      else if (source === "query") (req as Record<string, unknown>).query = parsed;
-      else (req as Record<string, unknown>).params = parsed;
+      else if (source === "query") (req as unknown as Record<string, unknown>).query = parsed;
+      else (req as unknown as Record<string, unknown>).params = parsed;
       next();
     } catch (err) {
       const zodError = err as ZodError;

@@ -51,7 +51,7 @@ router.post("/", requireStaff, validate.body(createLogBody), async (req, res, ne
 router.patch("/:id", requireStaff, async (req, res, next) => {
   try {
     const [updated] = await db.update(dailyLog).set(req.body)
-      .where(eq(dailyLog.id, req.params.id)).returning();
+      .where(eq(dailyLog.id, req.params.id as string)).returning();
     if (!updated) return res.status(404).json({ error: "Daily log not found" });
     res.json(updated);
   } catch (err) { next(err); }

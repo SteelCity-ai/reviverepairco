@@ -4,8 +4,9 @@ import { db } from "../../lib/db/index.js";
 import {
   mainTask,
   completionDocument,
+  workType,
 } from "../../lib/db/schema/portal.js";
-import { eq } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { validate } from "../middleware/validate.js";
 import { requireAdmin, requireStaff, requireClient } from "../middleware/auth.js";
@@ -15,6 +16,13 @@ import {
   recomputeProjectStatus,
   logActivity,
 } from "../lib/db-helpers.js";
+import {
+  allowedProjectIds,
+  assertEntityAccess,
+  assertProjectAccess,
+  requireUser,
+  resolveEntityProjectId,
+} from "../lib/project-access.js";
 
 const router = Router();
 
@@ -50,23 +58,63 @@ const updateMainTaskSchema = z.object({
 
 // GET /api/v1/main-tasks — list (optional ?workTypeId)
 router.get("/", async (req, res, next) => {
+  const user = requireUser(req.user);
+  if (!user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   try {
     const workTypeId = req.query.workTypeId as string | undefined;
 
     if (workTypeId) {
+      // Gate through the work type's owning project
+      const projectId = await resolveEntityProjectId("work_type", workTypeId);
+      if (!projectId) {
+        res.status(404).json({ error: "Work type not found" });
+        return;
+      }
+      const access = await assertProjectAccess(user, projectId);
+      if (!access.ok) {
+        res.status(access.status).json({ error: access.error });
+        return;
+      }
       const tasks = await db
         .select()
         .from(mainTask)
         .where(eq(mainTask.workTypeId, workTypeId))
         .orderBy(mainTask.sortOrder);
       res.json(tasks);
-    } else {
-      const tasks = await db
-        .select()
-        .from(mainTask)
-        .orderBy(mainTask.workTypeId, mainTask.sortOrder);
-      res.json(tasks);
+      return;
     }
+
+    // Scope the listing to projects the user may see
+    const allowed = await allowedProjectIds(user);
+    if (allowed !== "ALL" && allowed.length === 0) {
+      res.json([]);
+      return;
+    }
+    const tasks =
+      allowed === "ALL"
+        ? await db
+            .select()
+            .from(mainTask)
+            .orderBy(mainTask.workTypeId, mainTask.sortOrder)
+        : await db
+            .select({ id: mainTask.id })
+            .from(mainTask)
+            .innerJoin(workType, eq(mainTask.workTypeId, workType.id))
+            .where(inArray(workType.projectId, allowed))
+            .orderBy(mainTask.workTypeId)
+            .then((rows) =>
+              rows.length
+                ? db
+                    .select()
+                    .from(mainTask)
+                    .where(inArray(mainTask.id, rows.map((r) => r.id)))
+                    .orderBy(mainTask.workTypeId, mainTask.sortOrder)
+                : Promise.resolve([]),
+            );
+    res.json(tasks);
   } catch (err) {
     next(err);
   }
@@ -78,7 +126,27 @@ router.post(
   requireStaff,
   validate.body(createMainTaskSchema),
   async (req, res, next) => {
+    const user = requireUser(req.user);
+    if (!user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
     try {
+      // Access gate through the work type's owning project
+      const projectId = await resolveEntityProjectId(
+        "work_type",
+        req.body.workTypeId,
+      );
+      if (!projectId) {
+        res.status(404).json({ error: "Work type not found" });
+        return;
+      }
+      const access = await assertProjectAccess(user, projectId);
+      if (!access.ok) {
+        res.status(access.status).json({ error: access.error });
+        return;
+      }
+
       const [newTask] = await db
         .insert(mainTask)
         .values({
@@ -99,7 +167,7 @@ router.post(
       if (wt) {
         await logActivity(
           wt.projectId,
-          req.user!.userId,
+          user.userId,
           "main_task_created",
           "MAIN_TASK",
           newTask!.id,
@@ -117,9 +185,24 @@ router.post(
 
 // GET /api/v1/main-tasks/:id
 router.get("/:id", async (req, res, next) => {
+  const user = requireUser(req.user);
+  if (!user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   try {
+    const access = await assertEntityAccess(
+      user,
+      "main_task",
+      req.params.id as string,
+    );
+    if (!access.ok) {
+      res.status(access.status).json({ error: access.error });
+      return;
+    }
+
     const result = await db.query.mainTask.findFirst({
-      where: eq(mainTask.id, req.params.id!),
+      where: eq(mainTask.id, req.params.id as string),
       with: {
         dailyTasks: { orderBy: (dt, { asc }) => [asc(dt.sortOrder)] },
         completionDocument: true,
@@ -142,11 +225,27 @@ router.patch(
   requireStaff,
   validate.body(updateMainTaskSchema),
   async (req, res, next) => {
+    const user = requireUser(req.user);
+    if (!user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
     try {
+      // Access gate on the main task's owning project
+      const access = await assertEntityAccess(
+        user,
+        "main_task",
+        req.params.id as string,
+      );
+      if (!access.ok) {
+        res.status(access.status).json({ error: access.error });
+        return;
+      }
+
       const [updated] = await db
         .update(mainTask)
         .set({ ...req.body, updatedAt: new Date() })
-        .where(eq(mainTask.id, req.params.id!))
+        .where(eq(mainTask.id, req.params.id as string))
         .returning();
 
       if (!updated) {
@@ -178,7 +277,7 @@ router.patch(
 router.post("/:id/pm-approve", requireAdmin, async (req, res, next) => {
   try {
     const task = await db.query.mainTask.findFirst({
-      where: eq(mainTask.id, req.params.id!),
+      where: eq(mainTask.id, req.params.id as string),
       with: { dailyTasks: { with: { photos: true } } },
     });
 
@@ -236,7 +335,7 @@ router.post("/:id/pm-approve", requireAdmin, async (req, res, next) => {
         completionDocumentId: doc!.id,
         updatedAt: new Date(),
       })
-      .where(eq(mainTask.id, req.params.id!));
+      .where(eq(mainTask.id, req.params.id as string));
 
     // Log
     const wt = await db.query.workType.findFirst({
@@ -271,9 +370,25 @@ router.post(
   "/:id/client-signoff",
   requireClient,
   async (req, res, next) => {
+    const user = requireUser(req.user);
+    if (!user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
     try {
+      // Access gate: the signing client must own the task's project
+      const access = await assertEntityAccess(
+        user,
+        "main_task",
+        req.params.id as string,
+      );
+      if (!access.ok) {
+        res.status(access.status).json({ error: access.error });
+        return;
+      }
+
       const task = await db.query.mainTask.findFirst({
-        where: eq(mainTask.id, req.params.id!),
+        where: eq(mainTask.id, req.params.id as string),
       });
 
       if (!task) {
@@ -294,11 +409,11 @@ router.post(
         .set({
           status: "COMPLETE",
           clientSignedAt: new Date(),
-          clientSignedByUserId: req.user!.userId,
-          clientSignatureName: req.user!.displayName,
+          clientSignedByUserId: user.userId,
+          clientSignatureName: user.displayName,
           updatedAt: new Date(),
         })
-        .where(eq(mainTask.id, req.params.id!));
+        .where(eq(mainTask.id, req.params.id as string));
 
       await recomputeWorkTypeStatus(task.workTypeId);
 
@@ -312,7 +427,7 @@ router.post(
         await recomputeProjectStatus(wt.projectId);
         await logActivity(
           wt.projectId,
-          req.user!.userId,
+          user.userId,
           "client_signoff",
           "MAIN_TASK",
           task.id,
@@ -323,7 +438,7 @@ router.post(
         id: task.id,
         status: "COMPLETE",
         clientSignedAt: new Date().toISOString(),
-        clientSignedBy: req.user!.displayName,
+        clientSignedBy: user.displayName,
       });
     } catch (err) {
       next(err);

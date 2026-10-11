@@ -3,10 +3,16 @@ import multer from "multer";
 import { z } from "zod";
 import { db } from "../../lib/db/index.js";
 import { projectDocument, project } from "../../lib/db/schema/portal.js";
-import { eq, desc } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import { validate } from "../middleware/validate.js";
 import { requireStaff } from "../middleware/auth.js";
 import { uploadFile, getSignedUrl } from "../lib/storage.js";
+import {
+  allowedProjectIds,
+  assertEntityAccess,
+  assertProjectAccess,
+  requireUser,
+} from "../lib/project-access.js";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
@@ -23,24 +29,49 @@ const createDocumentBodySchema = z.object({
 
 // GET /api/v1/documents?projectId=xxx — list project documents
 router.get("/", async (req, res, next) => {
+  const user = requireUser(req.user);
+  if (!user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   try {
     const projectId = req.query.projectId as string | undefined;
 
     if (projectId) {
+      const access = await assertProjectAccess(user, projectId);
+      if (!access.ok) {
+        res.status(access.status).json({ error: access.error });
+        return;
+      }
       const docs = await db
         .select()
         .from(projectDocument)
         .where(eq(projectDocument.projectId, projectId))
         .orderBy(desc(projectDocument.createdAt));
       res.json(docs);
-    } else {
-      const docs = await db
-        .select()
-        .from(projectDocument)
-        .orderBy(desc(projectDocument.createdAt))
-        .limit(500);
-      res.json(docs);
+      return;
     }
+
+    // Scope the listing to projects the user may see
+    const allowed = await allowedProjectIds(user);
+    if (allowed !== "ALL" && allowed.length === 0) {
+      res.json([]);
+      return;
+    }
+    const docs =
+      allowed === "ALL"
+        ? await db
+            .select()
+            .from(projectDocument)
+            .orderBy(desc(projectDocument.createdAt))
+            .limit(500)
+        : await db
+            .select()
+            .from(projectDocument)
+            .where(inArray(projectDocument.projectId, allowed))
+            .orderBy(desc(projectDocument.createdAt))
+            .limit(500);
+    res.json(docs);
   } catch (err) {
     next(err);
   }
@@ -52,6 +83,11 @@ router.post(
   requireStaff,
   upload.single("file"),
   async (req, res, next) => {
+    const user = requireUser(req.user);
+    if (!user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
     try {
       if (!req.file) {
         res.status(400).json({ error: "No file provided" });
@@ -73,6 +109,13 @@ router.post(
         return;
       }
 
+      // Access gate: CREW needs PM or assignment on the target project
+      const access = await assertProjectAccess(user, projectId);
+      if (!access.ok) {
+        res.status(access.status).json({ error: access.error });
+        return;
+      }
+
       const category = (req.body.category as string) ?? "OTHER";
 
       const { objectKey } = await uploadFile(
@@ -89,7 +132,7 @@ router.post(
           originalFilename: req.file.originalname,
           mimeType: req.file.mimetype,
           sizeBytes: req.file.size,
-          uploadedByUserId: req.user!.userId,
+          uploadedByUserId: user.userId,
           category: category as typeof projectDocument.$inferSelect.category,
           description: req.body.description ?? null,
         })
@@ -104,9 +147,24 @@ router.post(
 
 // GET /api/v1/documents/:id — single document metadata
 router.get("/:id", async (req, res, next) => {
+  const user = requireUser(req.user);
+  if (!user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   try {
+    const access = await assertEntityAccess(
+      user,
+      "project_document",
+      req.params.id as string,
+    );
+    if (!access.ok) {
+      res.status(access.status).json({ error: access.error });
+      return;
+    }
+
     const doc = await db.query.projectDocument.findFirst({
-      where: eq(projectDocument.id, req.params.id!),
+      where: eq(projectDocument.id, req.params.id as string),
     });
 
     if (!doc) {
@@ -121,9 +179,24 @@ router.get("/:id", async (req, res, next) => {
 
 // GET /api/v1/documents/:id/url — get signed URL (stub)
 router.get("/:id/url", async (req, res, next) => {
+  const user = requireUser(req.user);
+  if (!user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   try {
+    const access = await assertEntityAccess(
+      user,
+      "project_document",
+      req.params.id as string,
+    );
+    if (!access.ok) {
+      res.status(access.status).json({ error: access.error });
+      return;
+    }
+
     const doc = await db.query.projectDocument.findFirst({
-      where: eq(projectDocument.id, req.params.id!),
+      where: eq(projectDocument.id, req.params.id as string),
     });
 
     if (!doc) {

@@ -46,7 +46,7 @@ router.post("/", requireStaff, validate.body(createSelectionBody), async (req, r
 router.patch("/:id", requireStaff, async (req, res, next) => {
   try {
     const [updated] = await db.update(selection).set(req.body)
-      .where(eq(selection.id, req.params.id)).returning();
+      .where(eq(selection.id, req.params.id as string)).returning();
     if (!updated) return res.status(404).json({ error: "Selection not found" });
     res.json(updated);
   } catch (err) { next(err); }

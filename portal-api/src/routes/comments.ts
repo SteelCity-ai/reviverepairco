@@ -2,8 +2,13 @@ import { Router } from "express";
 import { z } from "zod";
 import { db } from "../../lib/db/index.js";
 import { comment } from "../../lib/db/schema/portal.js";
-import { eq, and, desc } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { validate } from "../middleware/validate.js";
+import {
+  assertEntityAccess,
+  requireUser,
+  type AccessEntityType,
+} from "../lib/project-access.js";
 
 const router = Router();
 
@@ -19,25 +24,44 @@ const createCommentSchema = z.object({
 
 // GET /api/v1/comments — list (query entityType, entityId)
 router.get("/", async (req, res, next) => {
+  const user = requireUser(req.user);
+  if (!user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   try {
     const entityType = req.query.entityType as string | undefined;
     const entityId = req.query.entityId as string | undefined;
 
     if (entityType && entityId) {
+      // Gate through the commented entity's owning project
+      const access = await assertEntityAccess(
+        user,
+        entityType as AccessEntityType,
+        entityId,
+      );
+      if (!access.ok) {
+        res.status(access.status).json({ error: access.error });
+        return;
+      }
+
       const results = await db
         .select()
         .from(comment)
         .where(
           and(
-            eq(comment.entityType, entityType as typeof comment.$inferSelect.entityType),
+            eq(
+              comment.entityType,
+              entityType as typeof comment.$inferSelect.entityType,
+            ),
             eq(comment.entityId, entityId),
           ),
         )
         .orderBy(desc(comment.createdAt));
 
       res.json(results);
-    } else {
-      // If no filters, return recent comments (admin view)
+    } else if (user.role === "ADMIN") {
+      // No filters: recent comments, admin view only
       const results = await db
         .select()
         .from(comment)
@@ -45,6 +69,8 @@ router.get("/", async (req, res, next) => {
         .limit(100);
 
       res.json(results);
+    } else {
+      res.status(400).json({ error: "entityType and entityId are required" });
     }
   } catch (err) {
     next(err);
@@ -56,12 +82,28 @@ router.post(
   "/",
   validate.body(createCommentSchema),
   async (req, res, next) => {
+    const user = requireUser(req.user);
+    if (!user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
     try {
+      // Gate on the entity being commented on
+      const access = await assertEntityAccess(
+        user,
+        req.body.entityType as AccessEntityType,
+        req.body.entityId,
+      );
+      if (!access.ok) {
+        res.status(access.status).json({ error: access.error });
+        return;
+      }
+
       const [newComment] = await db
         .insert(comment)
         .values({
           ...req.body,
-          authorUserId: req.user!.userId,
+          authorUserId: user.userId,
         })
         .returning();
 
