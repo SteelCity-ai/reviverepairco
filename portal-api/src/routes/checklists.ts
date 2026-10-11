@@ -5,10 +5,18 @@ import {
   checklistTemplate,
   checklistInstance,
   checklistItemInstance,
+  mainTask,
+  workType,
 } from "../../lib/db/schema/portal.js";
-import { eq } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { validate } from "../middleware/validate.js";
 import { requireAdmin, requireStaff } from "../middleware/auth.js";
+import {
+  allowedProjectIds,
+  assertEntityAccess,
+  assertProjectAccess,
+  requireUser,
+} from "../lib/project-access.js";
 
 const router = Router();
 
@@ -57,8 +65,25 @@ router.patch("/templates/:id", requireAdmin, async (req, res, next) => {
 
 // ── Instances: list ──
 router.get("/instances", requireStaff, async (req, res, next) => {
+  const user = requireUser(req.user);
+  if (!user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   try {
+    const allowed = await allowedProjectIds(user);
+    const conditions = [];
+    if (allowed !== "ALL") {
+      const projectIds = await db
+        .select({ id: workType.id })
+        .from(workType)
+        .where(inArray(workType.projectId, allowed));
+      const workTypeIds = projectIds.map((r) => r.id);
+      if (workTypeIds.length === 0) return res.json([]);
+      conditions.push(inArray(checklistInstance.workTypeId, workTypeIds));
+    }
     const instances = await db.select().from(checklistInstance)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
       .orderBy(checklistInstance.createdAt);
     res.json(instances);
   } catch (err) { next(err); }
@@ -66,7 +91,31 @@ router.get("/instances", requireStaff, async (req, res, next) => {
 
 // ── Instances: create ──
 router.post("/instances", requireStaff, validate.body(createInstanceBody), async (req, res, next) => {
+  const user = requireUser(req.user);
+  if (!user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   try {
+    let projectId: string | null = null;
+    if (req.body.workTypeId) {
+      const r = await db.select({ projectId: workType.projectId })
+        .from(workType).where(eq(workType.id, req.body.workTypeId)).limit(1);
+      projectId = r[0]?.projectId ?? null;
+    } else if (req.body.mainTaskId) {
+      const r = await db.select({ projectId: workType.projectId })
+        .from(mainTask).innerJoin(workType, eq(mainTask.workTypeId, workType.id))
+        .where(eq(mainTask.id, req.body.mainTaskId)).limit(1);
+      projectId = r[0]?.projectId ?? null;
+    }
+    if (!projectId) {
+      return res.status(400).json({ error: "workTypeId or mainTaskId must reference an existing task" });
+    }
+    const access = await assertProjectAccess(user, projectId);
+    if (!access.ok) {
+      res.status(access.status).json({ error: access.error });
+      return;
+    }
     const [instance] = await db.insert(checklistInstance).values({
       ...req.body,
       status: "IN_PROGRESS",
@@ -92,7 +141,17 @@ router.post("/instances", requireStaff, validate.body(createInstanceBody), async
 
 // ── Instances: single with items ──
 router.get("/instances/:id", requireStaff, async (req, res, next) => {
+  const user = requireUser(req.user);
+  if (!user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   try {
+    const access = await assertEntityAccess(user, "checklist_instance", req.params.id as string);
+    if (!access.ok) {
+      res.status(access.status).json({ error: access.error });
+      return;
+    }
     const instance = await db.select().from(checklistInstance)
       .where(eq(checklistInstance.id, req.params.id as string)).limit(1);
     if (!instance[0]) return res.status(404).json({ error: "Instance not found" });
@@ -104,12 +163,22 @@ router.get("/instances/:id", requireStaff, async (req, res, next) => {
 
 // ── Items: mark PASS ──
 router.post("/items/:id/complete", requireStaff, async (req, res, next) => {
+  const user = requireUser(req.user);
+  if (!user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   try {
+    const access = await assertEntityAccess(user, "checklist_item_instance", req.params.id as string);
+    if (!access.ok) {
+      res.status(access.status).json({ error: access.error });
+      return;
+    }
     const [item] = await db.update(checklistItemInstance)
       .set({
         status: "PASS",
         completedAt: new Date(),
-        completedByUserId: req.user!.userId,
+        completedByUserId: user.userId,
       })
       .where(eq(checklistItemInstance.id, req.params.id as string)).returning();
     if (!item) return res.status(404).json({ error: "Item not found" });
@@ -119,7 +188,17 @@ router.post("/items/:id/complete", requireStaff, async (req, res, next) => {
 
 // ── Items: mark FAIL ──
 router.post("/items/:id/fail", requireStaff, async (req, res, next) => {
+  const user = requireUser(req.user);
+  if (!user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   try {
+    const access = await assertEntityAccess(user, "checklist_item_instance", req.params.id as string);
+    if (!access.ok) {
+      res.status(access.status).json({ error: access.error });
+      return;
+    }
     const [item] = await db.update(checklistItemInstance)
       .set({ status: "FAIL" })
       .where(eq(checklistItemInstance.id, req.params.id as string)).returning();
