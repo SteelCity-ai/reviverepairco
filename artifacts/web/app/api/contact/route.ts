@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { sendContactEmail } from "../../../lib/email";
+import {
+  EmailNotConfiguredError,
+  sendContactEmail,
+} from "../../../lib/email";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,6 +18,32 @@ interface ContactPayload {
   email?: string;
   service?: string;
   message?: string;
+}
+
+// The form only offers these categories. Anything else is bucketed as "other"
+// so free text from a visitor is never written to the logs.
+const SERVICE_CATEGORIES = new Set([
+  "emergency",
+  "leak",
+  "storm",
+  "replacement",
+  "inspection",
+  "commercial",
+  "other",
+]);
+
+function serviceCategory(service: string): string {
+  if (!service) return "(not specified)";
+  return SERVICE_CATEGORIES.has(service) ? service : "other";
+}
+
+function errorCodeOf(err: unknown): string {
+  if (err instanceof EmailNotConfiguredError) return err.code;
+  if (err instanceof Error) {
+    const code = (err as { code?: unknown }).code;
+    return typeof code === "string" ? code : err.name;
+  }
+  return "UNKNOWN";
 }
 
 function escapeHtml(value: string): string {
@@ -85,9 +114,22 @@ export async function POST(request: Request) {
       html,
       replyTo: email || undefined,
     });
+    console.info("Contact form email sent", {
+      event: "contact_form_send_succeeded",
+      timestamp: new Date().toISOString(),
+      recipientCount: RECIPIENTS.length,
+      serviceCategory: serviceCategory(service),
+    });
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("Contact form email send failed:", err);
+    // Non-PII metadata only: no name, phone, email address or message text.
+    console.error("Contact form email send failed", {
+      event: "contact_form_send_failed",
+      timestamp: new Date().toISOString(),
+      recipientCount: RECIPIENTS.length,
+      serviceCategory: serviceCategory(service),
+      errorCode: errorCodeOf(err),
+    });
     return NextResponse.json(
       { error: "We couldn't send your request. Please call (717) 500-1434." },
       { status: 500 },
