@@ -44,13 +44,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/general-contracting/demolition`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
   ];
 
-  const blogPosts: MetadataRoute.Sitemap = [
+  // Blog detail URLs: legacy static posts plus published posts from the
+  // admin portal public blog API (drafts never appear — API filters status).
+  let apiBlogPosts: MetadataRoute.Sitemap = [];
+  try {
+    const res = await fetch(
+      `${process.env.PORTAL_API_URL ?? "https://portal-dev.reviverepairco.com/api/v1"}/blog/public?limit=100&offset=0`,
+      { next: { revalidate: 300 } },
+    );
+    if (res.ok) {
+      const json = (await res.json()) as { data?: Array<{ slug?: string }> };
+      apiBlogPosts = (json.data ?? [])
+        .filter((p): p is { slug: string } => typeof p.slug === "string")
+        .map((p) => ({
+          url: `${baseUrl}/blog/${p.slug}`,
+          lastModified: now,
+          changeFrequency: "monthly" as const,
+          priority: 0.6,
+        }));
+    }
+  } catch (err) {
+    console.error("[sitemap] blog API unavailable, listing legacy posts only:", err);
+  }
+
+  const legacyBlogPosts: MetadataRoute.Sitemap = [
     { url: `${baseUrl}/blog/how-to-spot-hail-damage-roof-pennsylvania`, lastModified: now, changeFrequency: "yearly", priority: 0.6 },
     { url: `${baseUrl}/blog/does-insurance-cover-roof-replacement-pennsylvania`, lastModified: now, changeFrequency: "yearly", priority: 0.6 },
     { url: `${baseUrl}/blog/asphalt-shingle-vs-metal-roof-cost-pennsylvania`, lastModified: now, changeFrequency: "yearly", priority: 0.6 },
     { url: `${baseUrl}/blog/what-to-do-after-storm-pennsylvania`, lastModified: now, changeFrequency: "yearly", priority: 0.6 },
     { url: `${baseUrl}/blog/best-roof-shingles-pennsylvania`, lastModified: now, changeFrequency: "yearly", priority: 0.6 },
   ];
+
+  const blogPosts: MetadataRoute.Sitemap = [...legacyBlogPosts, ...apiBlogPosts];
 
   if (brand === "roofing") {
     return [...sharedRoutes, ...roofingDetailPages, ...blogPosts];
