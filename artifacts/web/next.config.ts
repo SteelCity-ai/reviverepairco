@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 
 const replitDomains = (process.env.REPLIT_DOMAINS ?? "")
   .split(",")
@@ -17,7 +18,7 @@ const devOrigins = Array.from(
 
 const nextConfig: NextConfig = {
   turbopack: {
-    root: "/home/runner/workspace",
+    root: path.join(__dirname, "../.."),
   },
   allowedDevOrigins: devOrigins,
   images: {
