@@ -1,5 +1,23 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Environment variables
+
+All variables are optional at build time; each feature degrades gracefully when
+its variable is missing.
+
+| Variable | Used by | Purpose |
+|---|---|---|
+| `NEXT_PUBLIC_PORTAL_URL` | portal links in the header | Browser-facing portal URL (default `https://portal.reviverepairco.com`) |
+| `PORTAL_API_URL` | `/blog` listing, `/blog/[slug]`, `/sitemap.xml` | Base URL of the portal public API, including version path (default `https://portal-dev.reviverepairco.com/api/v1`) |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | `lib/email.ts` | Contact-form notification mail |
+| `GMAIL_USER`, `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN` | `lib/email.ts` | Gmail OAuth alternative to SMTP |
+| `REPLIT_DOMAINS` | `next.config.ts` | Extra allowed dev origins when running on Replit |
+
+`PORTAL_API_URL` must point at the API root that serves `/blog/public`; for
+example `https://portal.reviverepairco.com/api/v1`. If the endpoint is
+unreachable or rejects anonymous calls, the blog pages render an empty state
+instead of failing the build or the request.
+
 ## Getting Started
 
 First, run the development server:
